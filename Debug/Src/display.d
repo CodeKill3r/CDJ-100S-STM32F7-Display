@@ -37,6 +37,8 @@ Src/display.o: ../Src/display.c ../Inc/ltdc.h ../Inc/main.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_spi_ex.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim_ex.h \
+ ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_hcd.h \
+ ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h \
  D:/Temp/CDJ-100S-STM32F7-Display/Middlewares/Third_Party/Helix/pub/mp3dec.h \
  ../Inc/dma2d.h ../Inc/rekordbox.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h \
@@ -87,6 +89,8 @@ Src/display.o: ../Src/display.c ../Inc/ltdc.h ../Inc/main.h \
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_spi_ex.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim_ex.h:
+../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_hcd.h:
+../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h:
 D:/Temp/CDJ-100S-STM32F7-Display/Middlewares/Third_Party/Helix/pub/mp3dec.h:
 ../Inc/dma2d.h:
 ../Inc/rekordbox.h:

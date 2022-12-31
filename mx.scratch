@@ -1,74 +1,249 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ScratchFile FileVersion="3.0">
   <FileVersion>3.0</FileVersion>
   <Workspace>
     <WorkspaceType>Single-project</WorkspaceType>
-    <WorkspacePath>C:\workspace\Display\</WorkspacePath>
+    <WorkspacePath>D:\Temp\CDJ-100S-STM32F7-Display\</WorkspacePath>
     <underRoot>true</underRoot>
     <TrustZone>0</TrustZone>
-    <HAL_Driver>C:\Users\teren\STM32Cube\Repository\STM32Cube_FW_F7_V1.15.0</HAL_Driver>
+    <HAL_Driver>D:\Users\Butch\STM32Cube\Repository\STM32Cube_FW_F7_V1.15.0</HAL_Driver>
     <CMSIS>Drivers/CMSIS</CMSIS>
     <Toolchain>STM32CubeIDE</Toolchain>
-    <IocFile>Display.ioc</IocFile>
+    <IocFile>CDJ_STM32F7_Display.ioc</IocFile>
     <Project>
-      <ProjectName>Display</ProjectName>
+      <ProjectName>CDJ_STM32F7_Display</ProjectName>
       <ProjectNature>C</ProjectNature>
-      <Secure/>
-      <filestoremove/>
+      <Secure />
+      <filestoremove>
+        <file>
+          <name>Src/sys.c</name>
+        </file>
+        <file>
+          <name>..\Src\display.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_cortex.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma2d.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rcc.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rcc_ex.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_flash.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_flash_ex.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_gpio.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma_ex.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr_ex.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c_ex.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_exti.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_fmc.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sdram.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_ltdc.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_ltdc_ex.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dsi.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sai.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sai_ex.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_sdmmc.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sd.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_spi.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_spi_ex.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_tim.c</name>
+        </file>
+        <file>
+          <name>Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_tim_ex.c</name>
+        </file>
+        <file>
+          <name>Middlewares/Third_Party/FatFs/src/diskio.c</name>
+        </file>
+        <file>
+          <name>Middlewares/Third_Party/FatFs/src/ff.c</name>
+        </file>
+        <file>
+          <name>Middlewares/Third_Party/FatFs/src/ff_gen_drv.c</name>
+        </file>
+        <file>
+          <name>Middlewares/Third_Party/FatFs/src/option/syscall.c</name>
+        </file>
+        <file>
+          <name>Middlewares/Third_Party/FatFs/src/option/ccsbcs.c</name>
+        </file>
+        <file>
+          <name>Src/system_stm32f7xx.c</name>
+        </file>
+        <file>
+          <name>Drivers/CMSIS/Device/ST/STM32F7xx/Source/Templates/system_stm32f7xx.c</name>
+        </file>
+        <file>
+          <name>gpio.h</name>
+        </file>
+        <file>
+          <name>ltdc.h</name>
+        </file>
+        <file>
+          <name>stm32f7xx_it.h</name>
+        </file>
+        <file>
+          <name>stm32f7xx_hal_conf.h</name>
+        </file>
+        <file>
+          <name>main.h</name>
+        </file>
+        <file>
+          <name>fmc.h</name>
+        </file>
+        <file>
+          <name>ffconf.h</name>
+        </file>
+        <file>
+          <name>bsp_driver_sd.h</name>
+        </file>
+        <file>
+          <name>sd_diskio.h</name>
+        </file>
+        <file>
+          <name>fatfs.h</name>
+        </file>
+        <file>
+          <name>sdmmc.h</name>
+        </file>
+        <file>
+          <name>dma2d.h</name>
+        </file>
+        <file>
+          <name>dma.h</name>
+        </file>
+        <file>
+          <name>sai.h</name>
+        </file>
+        <file>
+          <name>i2c.h</name>
+        </file>
+        <file>
+          <name>tim.h</name>
+        </file>
+        <file>
+          <name>fatfs_platform.h</name>
+        </file>
+        <file>
+          <name>spi.h</name>
+        </file>
+        <file>
+          <name>gfxsimulator.h</name>
+        </file>
+        <file>
+          <name>sys.h</name>
+        </file>
+      </filestoremove>
       <sourceEntriesToRemove>
-        <sourceEntry/>
+        <sourceEntry />
       </sourceEntriesToRemove>
       <configs>
         <config>
-          <name>Display</name>
+          <name>CDJ_STM32F7_Display</name>
           <mainSourceRepo>Src</mainSourceRepo>
           <sourceStructure>Basic</sourceStructure>
           <device>STM32F746NGHx</device>
           <cpucore>Arm Cortex-M7</cpucore>
           <fpu>SP</fpu>
           <memories>
-            <memory access="xrw" name="RAM" size="320" start="0x20000000"/>
-            <memory access="rx" name="FLASH" size="1024" start="0x8000000"/>
+            <memory access="xrw" name="RAM" size="320" start="0x20000000" />
+            <memory access="rx" name="FLASH" size="1024" start="0x8000000" />
           </memories>
-          <startup>C:\Users\teren\STM32Cube\Repository\STM32Cube_FW_F7_V1.15.0\Drivers\CMSIS\Device\ST\STM32F7xx\Source\Templates\gcc\startup_stm32f746xx.s</startup>
+          <startup>D:\Users\Butch\STM32Cube\Repository\STM32Cube_FW_F7_V1.15.0\Drivers\CMSIS\Device\ST\STM32F7xx\Source\Templates\gcc\startup_stm32f746xx.s</startup>
           <LinkSettings>
-            <LinkAdditionalLibs/>
+            <LinkAdditionalLibs />
           </LinkSettings>
           <heapSize>0x200</heapSize>
           <stackSize>0x400</stackSize>
+          <cpuclock>192</cpuclock>
           <board>custom</board>
           <debugprobe>swd</debugprobe>
           <optimization>3</optimization>
           <Aincludes>
-            <include/>
+            <include />
           </Aincludes>
-          <Adefines/>
+          <Adefines />
           <Cdefines>
             <define>USE_HAL_DRIVER</define>
             <define>STM32F746xx</define>
           </Cdefines>
-          <Ldefines/>
+          <Ldefines />
           <Cincludes>
             <include>Inc</include>
             <include>Drivers\STM32F7xx_HAL_Driver\Inc</include>
             <include>Drivers\STM32F7xx_HAL_Driver\Inc\Legacy</include>
             <include>Middlewares\Third_Party\FatFs\src</include>
+            <include>Middlewares\ST\STM32_USB_Host_Library\Core\Inc</include>
+            <include>Middlewares\ST\STM32_USB_Host_Library\Class\MSC\Inc</include>
             <include>Drivers\CMSIS\Device\ST\STM32F7xx\Include</include>
             <include>Drivers\CMSIS\Include</include>
           </Cincludes>
           <definestoremove>
-            <Adefines/>
+            <Adefines />
             <Cdefines>
               <define>USE_FULL_LL_DRIVER</define>
               <define>MBEDTLS_CONFIG_FILE="mbedtls_config.h"</define>
             </Cdefines>
-            <Ldefines/>
+            <Ldefines />
           </definestoremove>
           <inctoremove>
             <Aincludes>
-              <include/>
+              <include />
             </Aincludes>
-            <Cincludes/>
+            <Cincludes />
           </inctoremove>
         </config>
       </configs>
@@ -84,7 +259,8 @@
           <name>Middlewares</name>
         </sourceEntry>
       </sourceEntries>
-      <Groups/>
+      <Groups />
     </Project>
   </Workspace>
 </ScratchFile>
+

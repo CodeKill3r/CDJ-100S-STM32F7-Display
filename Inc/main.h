@@ -59,7 +59,6 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
-#include "stm32f7xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -91,6 +90,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define FS_PowerSwitchOn_Pin GPIO_PIN_5
+#define FS_PowerSwitchOn_GPIO_Port GPIOD
 #define KBD_INT_Pin GPIO_PIN_2
 #define KBD_INT_GPIO_Port GPIOI
 #define KBD_INT_EXTI_IRQn EXTI2_IRQn
@@ -106,6 +107,7 @@ void Error_Handler(void);
 #define LCD_INT_Pin GPIO_PIN_13
 #define LCD_INT_GPIO_Port GPIOI
 #define LCD_INT_EXTI_IRQn EXTI15_10_IRQn
+
 /* USER CODE BEGIN Private defines */
 #define LCD_FB_START_ADDRESS_0       ((uint32_t)0xC0000000)
 #define LCD_FB_START_ADDRESS_1		 ((uint32_t)0xC007F800)
@@ -141,5 +143,3 @@ typedef struct {
 #endif
 
 #endif /* __MAIN_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

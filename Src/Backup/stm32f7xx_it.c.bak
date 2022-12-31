@@ -87,8 +87,9 @@ extern RekordboxTypeDef rekordbox;
 extern SPI_HandleTypeDef hspi2;
 extern WavHeaderTypeDef wavfile;
 
+uint8_t flag = 0;
 uint8_t touch_count = 0;
-extern uint8_t menu_mode;
+extern int8_t menu_mode;
 float touch_wide = 0;
 uint16_t prev_x = 0;
 int str_offset = 0;
@@ -103,8 +104,6 @@ int Mark_number = -1;
 uint16_t button_flag = 0;
 extern int beat;
 
-uint32_t file_pos_disp = 0;
-
 extern TrackTypeDef trak;
 
 extern uint8_t spi_rx[4];
@@ -112,8 +111,15 @@ extern uint8_t spi_tx[4];
 
 extern uint32_t wavtagsize;
 extern uint32_t id3tagsize;
+extern uint8_t volume;
+extern uint8_t acue_sensitivity;
 
-uint8_t jog = 0;
+float scale_pitch = 1;
+int pulses = 0; // jog pulses counter
+int old_pulses = 0;
+float jog_sensitivity = 0.003; // jog sensitivity; must be 0.005 ... 0.01
+
+volatile uint32_t New_frequency = AUDIO_FREQUENCY_22K;
 
 /* USER CODE END 0 */
 
@@ -121,6 +127,7 @@ uint8_t jog = 0;
 extern DMA_HandleTypeDef hdma_sai2_a;
 extern SPI_HandleTypeDef hspi2;
 extern TIM_HandleTypeDef htim4;
+extern TIM_HandleTypeDef htim5;
 extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef htim7;
 extern TIM_HandleTypeDef htim8;
@@ -329,16 +336,8 @@ void TIM4_IRQHandler(void)
   /* USER CODE BEGIN TIM4_IRQn 0 */
 	ClearLayer();
 	SetBeatGrid();
-	if(menu_mode == 0) {
-		Synchronize_Spectrum(file_pos_wide);
-		DrawSpectrum();
-	}
-	if(jog == 1) {
-		uint32_t New_frequency = (uint32_t)(wavfile.SampleRate / 2)*(1 + trak.percent);
-		BSP_AUDIO_OUT_ClockConfig(&hsai_BlockA2, New_frequency, NULL);
-		jog = 0;
-	}
-	DrawLowSpectrum();
+	if(menu_mode == 0) DrawSpectrum();
+	if(menu_mode != 3) 	DrawLowSpectrum();
 	DrawMenu();
 	//DrawFrequencySpectrum();
 	ChangeLayers();
@@ -377,14 +376,31 @@ void EXTI15_10_IRQHandler(void)
 			if(trak.state == PLAYING) BSP_AUDIO_OUT_Resume();
 			else {
 				GetTrackTime();
-				if(!spi_tx[2] & (1 << 0)) spi_tx[2] |= (1 << 1);
+				if(spi_tx[2] & (1 << 0)) spi_tx[2] |= (1 << 1);
 				else spi_tx[2] &= ~(1 << 1);
 				trak.state = SETCUE;
 			}
 		}
 		else if((ts_State.touchY[0] > 20) && (ts_State.touchY[0] < 165)) {
 			if(menu_mode == 0) {
-				touch_count = 0;
+				if((ts_State.touchY[0] > 75) && (ts_State.touchY[0] < 165)) {
+					HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+					__HAL_TIM_CLEAR_IT(&htim6, TIM_IT_UPDATE);
+					__HAL_TIM_SET_COUNTER(&htim6, 0);
+					HAL_TIM_Base_Start_IT(&htim6);
+					touch_count = 0;
+					if(ts_State.touchX[0] > 280) {
+						if(stretch > 1) stretch--;
+						else stretch /= 2;
+						if(stretch < 0.1) stretch = 0.125;
+					}
+					else if(ts_State.touchX[0] < 200) {
+						if(stretch >= 1) stretch++;
+						else stretch *= 2;
+						if(stretch > 4) stretch = 4;
+					}
+					else stretch = 1;
+				}
 			}
 			if(menu_mode == 1) {
 				if(touch_count == 0) {
@@ -401,14 +417,16 @@ void EXTI15_10_IRQHandler(void)
 					str_offset = ts_State.touchX[0] - prev_x;
 				}
 				touch_count++;
-				if(String_number != ts_State.touchY[0] / 20 - 1) {
-					if(String_number > (ts_State.touchY[0] / 20 - 1)) {
-						str_increment += abs((ts_State.touchY[0] / 20 - 1) - String_number);
-						if(str_increment > Total_tracks - 7) str_increment = Total_tracks - 7;
-					}
-					else {
-						str_increment -= abs((ts_State.touchY[0] / 20 - 1) - String_number);
-						if(str_increment < 0) str_increment = 0;
+				if((String_number != ts_State.touchY[0] / 20 - 1)) {
+					if(Total_tracks > 7) {
+						if(String_number > (ts_State.touchY[0] / 20 - 1)) {
+							str_increment += abs((ts_State.touchY[0] / 20 - 1) - String_number);
+							if(str_increment > Total_tracks - 7) str_increment = Total_tracks - 7;
+						}
+						else {
+							str_increment -= abs((ts_State.touchY[0] / 20 - 1) - String_number);
+							if(str_increment < 0) str_increment = 0;
+						}
 					}
 					str_offset = 0;
 					touch_count = 0;
@@ -419,26 +437,47 @@ void EXTI15_10_IRQHandler(void)
 					touch_count = 0;
 					bOutOfData = 1;
 					unDmaBufMode = 3;
-					HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
-					__HAL_TIM_CLEAR_IT(&htim6, TIM_IT_UPDATE);
-					__HAL_TIM_SET_COUNTER(&htim6, 0);
-					HAL_TIM_Base_Start_IT(&htim6);
 					Track_number = String_number + str_increment;
 					if(Track_number >= Total_tracks) Track_number = 0;
 					String_number = -1;
 				}
 			}
+			if(menu_mode == 2) {
+				touch_count = 0;
+				if((ts_State.touchX[0] >= 40) && (ts_State.touchX[0] <= 440)) {
+					if((ts_State.touchY[0] > 40) && (ts_State.touchY[0] < 60))	{
+						volume = 100 * (float)(ts_State.touchX[0]-40) / 400;
+						BSP_AUDIO_OUT_SetVolume(volume);
+					}
+					if((ts_State.touchY[0] > 80) && (ts_State.touchY[0] < 100)) {
+						jog_sensitivity = 0.01 * (float)(ts_State.touchX[0]-40) / 400;
+					}
+					if((ts_State.touchY[0] > 120) && (ts_State.touchY[0] < 140)) {
+						acue_sensitivity = 250 * (float)(ts_State.touchX[0]-40) / 400;
+					}
+				}
+			}
 		}
 		else if((ts_State.touchY[0] > 0) && (ts_State.touchY[0] < 20)) {
-			touch_count = 0;
-			if(menu_mode == 0) menu_mode = 1;
-			else menu_mode = 0;
 			HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 			__HAL_TIM_CLEAR_IT(&htim6, TIM_IT_UPDATE);
 			__HAL_TIM_SET_COUNTER(&htim6, 0);
 			HAL_TIM_Base_Start_IT(&htim6);
+			touch_count = 0;
+			if(ts_State.touchX[0] < 200) {
+				menu_mode--;
+				if(menu_mode < 0) menu_mode = 2;
+			}
+			else if(ts_State.touchX[0] > 280) {
+				menu_mode++;
+				if(menu_mode > 2) menu_mode = 0;
+			}
 		}
 		else if((ts_State.touchX[0] > 80) && (ts_State.touchX[0] < 280) && (ts_State.touchY[0] > 180) && (ts_State.touchY[0] < 210)) {
+			HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+			__HAL_TIM_CLEAR_IT(&htim6, TIM_IT_UPDATE);
+			__HAL_TIM_SET_COUNTER(&htim6, 0);
+			HAL_TIM_Base_Start_IT(&htim6);
 			touch_count = 0;
 			if(display.timemode == 0) {
 				display.timemode = 1;
@@ -448,16 +487,12 @@ void EXTI15_10_IRQHandler(void)
 				display.timemode = 0;
 				display.trackbarmode = 0;
 			}
-			HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
-			__HAL_TIM_CLEAR_IT(&htim6, TIM_IT_UPDATE);
-			__HAL_TIM_SET_COUNTER(&htim6, 0);
-			HAL_TIM_Base_Start_IT(&htim6);
 		}
 		else {
 			touch_count = 0;
 		}
 	}
-	if(ts_State.touchDetected == 2) {
+	/*if((ts_State.touchDetected == 2) && (menu_mode == 0)) {
 		if((ts_State.touchY[0] > 75) && (ts_State.touchY[0] < 165)) {
 			if(touch_count == 0) {
 				touch_wide = abs(ts_State.touchX[0] - ts_State.touchX[1]);
@@ -469,7 +504,7 @@ void EXTI15_10_IRQHandler(void)
 			}
 			touch_count++;
 		}
-	}
+	}*/
 	BSP_TS_ResetTouchData(&ts_State);
 	BSP_TS_ITClear();
   /* USER CODE END EXTI15_10_IRQn 0 */
@@ -500,17 +535,39 @@ void TIM8_UP_TIM13_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles TIM5 global interrupt.
+  */
+void TIM5_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM5_IRQn 0 */
+	if(pulses != old_pulses) {
+		if(pulses != 0) {
+			New_frequency = (uint32_t)((trak.bitrate / 2)
+					*(1 + trak.percent + jog_sensitivity*pulses));
+		}
+		else {
+			New_frequency = (uint32_t)((trak.bitrate / 2)*(1 + trak.percent));
+		}
+		BSP_AUDIO_OUT_ClockConfig(&hsai_BlockA2, New_frequency, NULL);
+		old_pulses = pulses;
+	}
+	pulses = 0;
+  /* USER CODE END TIM5_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim5);
+  /* USER CODE BEGIN TIM5_IRQn 1 */
+
+  /* USER CODE END TIM5_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM6 global interrupt, DAC1 and DAC2 underrun error interrupts.
   */
 void TIM6_DAC_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
 	NVIC_EnableIRQ(EXTI15_10_IRQn);
-	NVIC_EnableIRQ(TIM8_UP_TIM13_IRQn);
 	HAL_TIM_Base_Stop_IT(&htim6);
-	str_offset = 0;
 	touch_count = 0;
-	String_number = -1;
 
   /* USER CODE END TIM6_DAC_IRQn 0 */
   HAL_TIM_IRQHandler(&htim6);
@@ -570,7 +627,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 				__HAL_TIM_CLEAR_IT(&htim6, TIM_IT_UPDATE);
 				__HAL_TIM_SET_COUNTER(&htim6, 0);
 				HAL_TIM_Base_Start_IT(&htim6);
-				Track_number = String_number + str_increment;
+				Track_number = Mark_number + str_increment;
 				if(Track_number >= Total_tracks) Track_number = 0;
 				String_number = -1;
 			}
@@ -624,6 +681,8 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 			}
 			else {
 				display.loopend = (display.loopend+display.loopstart)/2;
+				if(display.loopend - display.loopstart < 1)
+					display.loopend = display.loopstart + 1;
 				if(file_pos_wide >= display.loopend) {
 					GoToPosition(display.loopstart);
 					BSP_AUDIO_OUT_Resume();
@@ -639,6 +698,8 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 			}
 			else {
 				display.loopend = display.loopend*2-display.loopstart;
+				if(display.loopend >= rekordbox.spectrum_size)
+					display.loopend = rekordbox.spectrum_size - 1;
 			}
 			break;
 		}
@@ -661,16 +722,20 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 				}
 			}
 			else {
-				rekordbox.currentcue--;
-				if(rekordbox.currentcue < 0)
-					rekordbox.currentcue = rekordbox.cues - 1;
+				rekordbox.currentcue++;
+				if(rekordbox.currentcue >= rekordbox.cues)
+					rekordbox.currentcue = 0;
 				GoToPosition(rekordbox.cue_start_position[rekordbox.currentcue]);
-				BSP_AUDIO_OUT_Resume();
-				trak.state = PLAYING;
-				HAL_TIM_Base_Stop_IT(&htim8); //stop blinking
-				spi_tx[2] &= ~(1 << 0); //turn on PLAY led
+				if(trak.state == PLAYING) {
+					BSP_AUDIO_OUT_Resume();
+					HAL_TIM_Base_Stop_IT(&htim8); //stop blinking
+					spi_tx[2] &= ~(1 << 0); //turn on PLAY led
+				}
+				else {
+					GetTrackTime();
+				}
 				// if CUE is set
-				if(rekordbox.cue_start_position[0] != 0) {
+				if(rekordbox.cue_start_position[rekordbox.currentcue] != 0) {
 					spi_tx[2] &= ~(1 << 1); //turn on CUE led
 				}
 				else {
@@ -698,16 +763,20 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 				}
 			}
 			else {
-				rekordbox.currentcue++;
-				if(rekordbox.currentcue >= rekordbox.cues)
-					rekordbox.currentcue = 0;
+				rekordbox.currentcue--;
+				if(rekordbox.currentcue < 0)
+					rekordbox.currentcue = rekordbox.cues - 1;
 				GoToPosition(rekordbox.cue_start_position[rekordbox.currentcue]);
-				BSP_AUDIO_OUT_Resume();
-				trak.state = PLAYING;
-				HAL_TIM_Base_Stop_IT(&htim8); //stop blinking
-				spi_tx[2] &= ~(1 << 0); //turn on PLAY led
+				if(trak.state == PLAYING) {
+					BSP_AUDIO_OUT_Resume();
+					HAL_TIM_Base_Stop_IT(&htim8); //stop blinking
+					spi_tx[2] &= ~(1 << 0); //turn on PLAY led
+				}
+				else {
+					GetTrackTime();
+				}
 				// if CUE is set
-				if(rekordbox.cue_start_position[0] != 0) {
+				if(rekordbox.cue_start_position[rekordbox.currentcue] != 0) {
 					spi_tx[2] &= ~(1 << 1); //turn on CUE led
 				}
 				else {
@@ -735,7 +804,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 				HAL_TIM_Base_Stop_IT(&htim8); //stop blinking
 				spi_tx[2] &= ~(1 << 0); //turn on PLAY led
 				// if CUE is set
-				if(rekordbox.cue_start_position[0] != 0) {
+				if(rekordbox.cue_start_position[rekordbox.currentcue] != 0) {
 					spi_tx[2] &= ~(1 << 1); //turn on CUE led
 				}
 				else {
@@ -758,6 +827,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 				else {
 					rekordbox.cue_start_position[0] = file_pos_wide;
 				}
+				rekordbox.currentcue = 0;
 				spi_tx[2] &= ~(1 << 1); //turn on CUE led
 				trak.state = STOPPED;
 			}
@@ -774,7 +844,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 					BSP_AUDIO_OUT_Pause();
 					trak.state = STOPPED;
 					HAL_TIM_Base_Start_IT(&htim8); //start blinking
-					GoToPosition(rekordbox.cue_start_position[0]);
+					GoToPosition(rekordbox.cue_start_position[rekordbox.currentcue]);
 					TrackTime();
 				}
 				break;
@@ -800,14 +870,12 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 					HAL_TIM_Base_Stop_IT(&htim9);
 					display.pitchmode++;
 					if(display.pitchmode > 3) display.pitchmode = 0;
-					float scale_pitch = 1;
 					if(display.pitchmode == 0) scale_pitch = 1; //wide
 					else if(display.pitchmode == 1) scale_pitch = 0.16; //16%
 					else if(display.pitchmode == 2) scale_pitch = 0.1; //10%
 					else if(display.pitchmode == 3) scale_pitch = 0.06; //6%
 					trak.percent = ((float)trak.pitch - 16384) / 16384 * scale_pitch;
-					uint32_t New_frequency = (uint32_t)(wavfile.SampleRate / 2)*
-							(1 + trak.percent);
+					New_frequency = (uint32_t)((trak.bitrate / 2)*(1 + trak.percent));
 					BSP_AUDIO_OUT_ClockConfig(&hsai_BlockA2, New_frequency, NULL);
 				}
 				break;
@@ -828,25 +896,35 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 			break;
 		}
 		case 0xB0: {
+			HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+			__HAL_TIM_CLEAR_IT(&htim6, TIM_IT_UPDATE);
+			__HAL_TIM_SET_COUNTER(&htim6, 0);
+			HAL_TIM_Base_Start_IT(&htim6);
 			if(spi_rx[2] == 0x24) {
 				if(spi_rx[3] == 0x01) {
 					if(menu_mode == 1) {
 						String_number++;
 						Mark_number = String_number;
-						if(String_number > 6) {
-							String_number = 0;
-							Mark_number = 0;
-							str_increment += 7;
-							if(str_increment >= Total_tracks - 7)
-								str_increment = Total_tracks - 7;
+						if(Total_tracks < 7) {
+							if(String_number + 1 > Total_tracks) {
+								String_number = 0;
+								Mark_number = 0;
+							}
+						}
+						else {
+							if(String_number > 6) {
+								String_number = 0;
+								Mark_number = 0;
+								str_increment += 7;
+								if(str_increment >= Total_tracks - 7)
+									str_increment = Total_tracks - 7;
+							}
 						}
 					}
 					else {
 						//jog forward
 						if(trak.state == PLAYING) {
-							uint32_t New_frequency = (uint32_t)(wavfile.SampleRate / 2)*(1 + 0.1);
-							BSP_AUDIO_OUT_ClockConfig(&hsai_BlockA2, New_frequency, NULL);
-							jog = 1;
+							pulses++;
 						}
 						else if(trak.state == SETCUE) {
 							GoToPosition(file_pos_wide + 2);
@@ -859,21 +937,25 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 						String_number--;
 						Mark_number = String_number;
 						if(String_number < 0) {
-							String_number = 6;
-							Mark_number = 6;
-							if(str_increment == Total_tracks - 7)
-								str_increment = (str_increment / 7) * 7;
-							else str_increment -= 7;
-							if(str_increment <= 0)
-								str_increment = 0;
+							if(Total_tracks > 7) {
+								String_number = 6;
+								Mark_number = 6;
+								str_increment -= 7;
+								if(str_increment == Total_tracks - 7)
+									str_increment = (str_increment / 7) * 7;
+								if(str_increment <= 0)
+									str_increment = 0;
+							}
+							else {
+								String_number = Total_tracks - 1;
+								Mark_number = Total_tracks - 1;;
+							}
 						}
 					}
 					else {
 						//jog back
 						if(trak.state == PLAYING) {
-							uint32_t New_frequency = (uint32_t)(wavfile.SampleRate / 2)*(1 - 0.1);
-							BSP_AUDIO_OUT_ClockConfig(&hsai_BlockA2, New_frequency, NULL);
-							jog = 1;
+							pulses--;
 						}
 						else if(trak.state == SETCUE) {
 							GoToPosition(file_pos_wide - 2);
@@ -888,15 +970,19 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 			uint16_t pitch_rx = spi_rx[3];
 			pitch_rx <<= 8;
 			pitch_rx |= spi_rx[2];
-			float scale_pitch = 1;
-			if(display.pitchmode == 0) scale_pitch = 1; //wide
-			else if(display.pitchmode == 1) scale_pitch = 0.16; //16%
-			else if(display.pitchmode == 2) scale_pitch = 0.1; //10%
-			else if(display.pitchmode == 3) scale_pitch = 0.06; //6%
-			trak.percent = ((float)pitch_rx - 16384) / 16384 * scale_pitch;
-			uint32_t New_frequency = (uint32_t)(wavfile.SampleRate / 2)*(1 + trak.percent);
-			BSP_AUDIO_OUT_ClockConfig(&hsai_BlockA2, New_frequency, NULL);
-			trak.pitch = pitch_rx;
+			if(flag == 0) {
+				if(trak.pitch == 0) trak.pitch = pitch_rx;
+				flag = 1;
+			}
+			int delta = trak.pitch - pitch_rx;
+			if(delta < 0) delta = pitch_rx - trak.pitch;
+			if(pitch_rx < 64) pitch_rx = 64;
+			if(delta < 16384) {
+				trak.percent = ((float)pitch_rx - 16383) / 16384 * scale_pitch;
+				New_frequency = (uint32_t)((trak.bitrate / 2)*(1 + trak.percent));
+				BSP_AUDIO_OUT_ClockConfig(&hsai_BlockA2, New_frequency, NULL);
+				trak.pitch = pitch_rx;
+			}
 			break;
 		}
 		default: break;

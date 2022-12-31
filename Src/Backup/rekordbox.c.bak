@@ -29,6 +29,7 @@ extern AUDIO_OUT_BufferTypeDef  BufferCtl;
 
 extern FIL MyFile;     /* File object */
 extern uint16_t bytesread;
+extern uint8_t acue_sensitivity;
 
 static uint8_t FindToken (char *token);
 static int32_t GetLongNumber ();
@@ -215,7 +216,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 			while(f_read(&MyFile, &tag[0], 1, (void *)&bytesread) != FR_OK);
 			*(__IO uint8_t*)(WAVE_BUFFER+i) = tag[0];
 			if(rekordbox.autocue == 1) {
-				if(((tag[0] & 0x1F) > 5) && ((tag[0] & 0xE0) < 128)) {
+				if(((tag[0] & 0x1F) > acue_sensitivity/10) && ((tag[0] & 0xE0) < 128)) {
 					rekordbox.autocue = 2;
 					rekordbox.cue_start_position[0] = i;
 				}
@@ -347,7 +348,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 			while(f_read(&MyFile, &tag[0], 1, (void *)&bytesread) != FR_OK);
 			*(__IO uint8_t*)(WAVE_BUFFER+i) = tag[0];
 			if(rekordbox.autocue == 1) {
-				if(((tag[0] & 0x1F) > 5) && ((tag[0] & 0xE0) < 128)) {
+				if(((tag[0] & 0x1F) > acue_sensitivity/10) && ((tag[0] & 0xE0) < 128)) {
 					rekordbox.autocue = 2;
 					rekordbox.cue_start_position[0] = i;
 				}

@@ -99,20 +99,22 @@ uint8_t ActiveLayer = 0;
 int Track_number = 0;
 FATFS SDFatFs;  /* File system object for SD card logical drive */
 FIL MyFile;     /* File object */
-char SDPath[4]; /* SD card logical drive path */
+extern char SDPath[4]; /* SD card logical drive path */
 FRESULT res;
 DIR dir;
 static FILINFO fno;
 TCHAR new_path[255] = {0};
+TCHAR old_path[255] = {0};
 uint16_t bytesread = 0;
 uint32_t file_pos = 0;
 uint32_t file_pos_wide = 0;
-uint32_t file_pos_ms = 0;
+extern volatile int32_t position;
 uint8_t lowp_wavebuffer[400];
 extern RekordboxTypeDef rekordbox;
 extern DisplayTypeDef display;
 uint16_t Total_tracks = 0;
 char TrackTable[100][255];
+char TrackPaths[100][255];
 int8_t halffr = 0;
 int16_t fr = 0;
 int8_t sec = 0;
@@ -121,7 +123,7 @@ int16_t rfr = 0;
 int8_t rsec = 0;
 int8_t rmin = 0;
 uint8_t tim7_flag = 0;
-extern uint8_t menu_mode;
+extern int8_t menu_mode;
 extern int beat;
 extern int bar;
 
@@ -136,8 +138,10 @@ TS_StateTypeDef ts_State;
 
 AUDIO_OUT_BufferTypeDef BufferCtl;
 
-UINT bOutOfData = 0;
-uint32_t unDmaBufMode = 0;
+volatile UINT bOutOfData = 0;
+volatile uint32_t unDmaBufMode = 0;
+uint8_t volume = 60;
+uint8_t acue_sensitivity = 30;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -205,26 +209,35 @@ int main(void)
   MX_TIM7_Init();
   MX_TIM8_Init();
   MX_SPI2_Init();
+  MX_TIM5_Init();
   MX_TIM9_Init();
   /* USER CODE BEGIN 2 */
   SDRAM_Init(); // MT48LC4M32B2B5-6A SDRAM initialization
+  BSP_LCD_DisplayOff();
   HAL_LTDC_SetAddress(&hltdc, LCD_FB_START_ADDRESS_0, 0); // set layer 0 framebuffer address
   HAL_LTDC_SetAddress(&hltdc, LCD_FB_START_ADDRESS_1, 1); // set layer 1 framebuffer address
-  res = f_mount(&SDFatFs, (TCHAR const*)SDPath, 0); // SD card disk mount
-  hMP3Decoder = MP3InitDecoder(); // mp3 decoder initialization
-  scan_files(); // get total track number
   ClearLayer(); // clear framebuffer 0
   HAL_LTDC_SetAlpha_NoReload(&hltdc, 0, ActiveLayer++);
   HAL_LTDC_SetAlpha_NoReload(&hltdc, 255, ActiveLayer--);
   ChangeLayers();
   ClearLayer(); // clear framebuffer 1
+  HAL_TIM_Base_Start_IT(&htim4); // starft display refresh timer
+  if(BSP_SD_IsDetected() != SD_PRESENT) {
+	  menu_mode = 3;
+	  BSP_LCD_DisplayOn();
+	  while(1);
+  }
   BSP_TS_Init(480, 272); // touchscreen initialization
   BSP_TS_ITClear();
   BSP_TS_ITConfig();
-  HAL_TIM_Base_Start_IT(&htim4); // display refresh timer
+  f_mount(&SDFatFs, (TCHAR const*)SDPath, 0); // SD card disk mount
+  hMP3Decoder = MP3InitDecoder(); // mp3 decoder initialization
+  scan_files(); // get total track number
+  HAL_TIM_Base_Start_IT(&htim5); // start jog speed counting timer
   HAL_SPI_TransmitReceive_IT(&hspi2, spi_tx, spi_rx, 4);
-  BSP_AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, 60, (uint32_t)(22050)*
-		  (1 + trak.percent));
+  BSP_AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, volume, (uint32_t)(AUDIO_FREQUENCY_22K)*(1 + trak.percent));
+  BSP_AUDIO_OUT_SetVolume(0);
+  BSP_LCD_DisplayOn();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -239,10 +252,12 @@ int main(void)
 	  rsec = 0;
 	  rmin = 0;
 	  file_pos_wide = 0;
+	  position = 0;
 	  rekordbox.state = 0;
 	  display.loop = 0;
 	  if(display.cuemode == 1) rekordbox.autocue = 1;
 	  else rekordbox.autocue = 0;
+	  rekordbox.currentcue = 0;
 	  DecodeRekordboxFiles(new_path);
 	  menu_mode = 0;
 	  bar = 0;
@@ -263,13 +278,13 @@ int main(void)
 		  }
 		  spi_tx[2] |= (1 << 3);
 		  trak.state = STOPPED;
-		  BSP_AUDIO_OUT_Pause();
+		  BSP_AUDIO_OUT_Stop(CODEC_PDWN_SW);
 	  }
 	  if(file_pos_wide >= rekordbox.spectrum_size) {
 		  Track_number++;
 	  }
 	  file_pos_wide = 0;
-	  menu_mode = 2;
+	  menu_mode = 4;
 	  f_close(&MyFile);
 	  f_closedir(&dir);
 	  if(Track_number >= Total_tracks) Track_number = 0;
@@ -356,106 +371,84 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 FRESULT scan_files()
 {
-	uint16_t i = 0;
-	while(1) {
-		res = f_opendir(&dir, L"/PIONEER/USBANLZ");  /* Open the directory */
-		i = 0;
-		do {
-			res = f_readdir(&dir, &fno);  /* Read a directory item */
-			if (res != FR_OK || fno.fname[0] == 0) break;  /* Break on error or end of dir */
-		}
-		while(i++ < Total_tracks);
-		if (res != FR_OK || fno.fname[0] == 0) {
-			f_closedir(&dir);
-			break;  /* Break on error or end of dir */
-		}
-		if (fno.fattrib & AM_DIR)
-		{    /* It is a directory */
-			for(i = 0; i < 255; i++) new_path[i] = 0;
-			wcscpy(new_path, L"/PIONEER/USBANLZ/");
-			wcscat(new_path, fno.fname);
-			f_closedir(&dir);
-			res = f_opendir(&dir, new_path);  /* Open the directory */
-			if (res == FR_OK) {
-				/* Enter the directory */
-				res = f_readdir(&dir, &fno);  /* Read a directory item */
-				if (res != FR_OK || fno.fname[0] == 0) return FR_NO_FILE;  /* Break on error or end of dir */
-				if (fno.fattrib & AM_DIR)
-				{    /* It is a directory */
-					wcscat(new_path, L"/");
-					wcscat(new_path, fno.fname);
-					f_closedir(&dir);
-					res = f_opendir(&dir, new_path);  /* Open the directory */
-					if (res == FR_OK) {
-						/* Enter the directory */
-						res = f_readdir(&dir, &fno);  /* Read a directory item */
-						if (res != FR_OK || fno.fname[0] == 0) return FR_NO_FILE;  /* Break on error or end of dir */
-						if (fno.fattrib & AM_DIR)
-						{    /* It is a directory */
-							return FR_NO_FILE;
-						}
-						else
-						{
-							/* It is a file. */
-							wcscat(new_path, L"/");
-							wcscat(new_path, fno.fname);
-							GetFileName(new_path);
-							for(i = 0; i < 255; i++) TrackTable[Total_tracks][i] = rekordbox.file[i];
-							Total_tracks++;
-							f_closedir(&dir);
-						}
-					}
-				}
-			}
-		}
-	}
-	return res;
+    DIR folder;
+    UINT i = 0;
+    UINT folders = 0;
+    UINT subfolders = 0;
+    TCHAR relative_path[255] = {0};
+    while(1) {
+    	res = f_opendir(&folder, L"/PIONEER/USBANLZ");	/* Open the directory */
+    	i = 0;
+    	do {
+    		res = f_readdir(&folder, &fno);	/* Read a directory item */
+    	}
+    	while(i++ < folders);
+    	if (res != FR_OK || fno.fname[0] == 0) {
+    		f_closedir(&folder);
+    		break;	/* Break on error or end of dir */
+    	}
+    	if (fno.fattrib & AM_DIR) {	/* It is a directory */
+    		folders++;
+    		wcscpy(new_path, L"/PIONEER/USBANLZ/");
+    		wcscat(new_path, fno.fname);
+    	  	for(i = 0; i < 255; i++) relative_path[i] = 0;
+    		wcscpy(relative_path, fno.fname);
+    		wcscpy(old_path, new_path);
+    		f_closedir(&folder);
+    		subfolders = 0;
+    		while(1) {
+    			res = f_opendir(&folder, old_path);
+    			for(i = 0; i < 255; i++) new_path[i] = 0;
+    			wcscpy(new_path, old_path);
+    			i = 0;
+    			do {
+    				res = f_readdir(&folder, &fno);	/* Read a directory item */
+    			}
+    			while(i++ < subfolders);
+    			if (res != FR_OK || fno.fname[0] == 0) {
+    				f_closedir(&folder);
+    				break;  /* Break on error or end of dir */
+    			}
+    			if (fno.fattrib & AM_DIR) {	/* It is a directory */
+    				subfolders++;
+    				wcscat(new_path, L"/");
+    				wcscat(new_path, fno.fname);
+    				wcscat(relative_path, L"/");
+    				wcscat(relative_path, fno.fname);
+    				f_closedir(&folder);
+    				res = f_opendir(&folder, new_path);
+    				if(res == FR_OK) {
+    					res = f_readdir(&folder, &fno);
+    					if (!(fno.fattrib & AM_DIR)) {
+    						for(i=0; i<255; i++) TrackPaths[Total_tracks][i] = ff_convert(new_path[i], 0);
+    						wcscat(new_path, L"/");
+    						wcscat(new_path, fno.fname);
+    						GetFileName(new_path);
+    						for(i = 0; i < 255; i++) TrackTable[Total_tracks][i] = rekordbox.file[i];
+    						Total_tracks++;
+    						f_closedir(&folder);
+    					}
+    				}
+    			}
+    		}
+    	}
+    }
+    return res;
 }
 
 FRESULT find_file(uint16_t track_number)
 {
-	uint16_t i = 0;
-	res = f_opendir(&dir, L"/PIONEER/USBANLZ");  /* Open the directory */
-	do {
-		res = f_readdir(&dir, &fno);  /* Read a directory item */
-		if (res != FR_OK || fno.fname[0] == 0) break;  /* Break on error or end of dir */
-	}
-	while(i++ < Track_number);
-	if (fno.fattrib & AM_DIR)
-	{    /* It is a directory */
-		for(i = 0; i < 255; i++) new_path[i] = 0;
-		wcscpy(new_path, L"/PIONEER/USBANLZ");
-		wcscat(new_path, L"/");
-		wcscat(new_path, fno.fname);
-		f_closedir(&dir);
-		res = f_opendir(&dir, new_path);  /* Open the directory */
-		if (res == FR_OK) {
-			/* Enter the directory */
-			res = f_readdir(&dir, &fno);  /* Read a directory item */
-			if (res != FR_OK || fno.fname[0] == 0) return FR_NO_FILE;  /* Break on error or end of dir */
-			if (fno.fattrib & AM_DIR)
-			{    /* It is a directory */
-				wcscat(new_path, L"/");
-				wcscat(new_path, fno.fname);
-				f_closedir(&dir);
-				res = f_opendir(&dir, new_path);  /* Open the directory */
-				if (res == FR_OK) {
-					/* Enter the directory */
-					res = f_readdir(&dir, &fno);  /* Read a directory item */
-					if (res != FR_OK || fno.fname[0] == 0) return FR_NO_FILE;  /* Break on error or end of dir */
-					if (fno.fattrib & AM_DIR)
-					{    /* It is a directory */
-						return FR_NO_FILE;
-					}
-					else
-					{
-						/* It is a file. */
-					}
-				}
-			}
+    DIR folder;
+    TCHAR path[255] = {0};
+    for(int i=0; i<255; i++) path[i] = ff_convert(TrackPaths[Track_number][i], 1);
+    wcscpy(new_path, path);
+	res = f_opendir(&folder, new_path);
+	if(res == FR_OK) {
+		res = f_readdir(&folder, &fno);
+		if (!(fno.fattrib & AM_DIR)) {
 		}
 	}
-	return res;
+    return res;
 }
 
 /* USER CODE END 4 */

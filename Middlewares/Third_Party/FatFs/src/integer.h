@@ -23,8 +23,8 @@ typedef unsigned char	BYTE;
 
 /* These types MUST be 16-bit */
 typedef short			SHORT;
-typedef unsigned int	WORD;
-typedef unsigned int	WCHAR;
+typedef unsigned short	WORD;
+typedef unsigned short	WCHAR;
 
 /* These types MUST be 32-bit */
 typedef long			LONG;

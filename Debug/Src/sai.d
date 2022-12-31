@@ -39,7 +39,7 @@ Src/sai.o: ../Src/sai.c ../Inc/sai.h ../Inc/main.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim_ex.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_hcd.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h \
- D:/Temp/CDJ-100S-STM32F7-Display/Middlewares/Third_Party/Helix/pub/mp3dec.h
+ ../Middlewares/Third_Party/Helix/pub/mp3dec.h
 ../Inc/sai.h:
 ../Inc/main.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
@@ -82,4 +82,4 @@ Src/sai.o: ../Src/sai.c ../Inc/sai.h ../Inc/main.h \
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim_ex.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_hcd.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h:
-D:/Temp/CDJ-100S-STM32F7-Display/Middlewares/Third_Party/Helix/pub/mp3dec.h:
+../Middlewares/Third_Party/Helix/pub/mp3dec.h:

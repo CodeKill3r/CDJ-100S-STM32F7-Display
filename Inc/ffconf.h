@@ -57,6 +57,10 @@
 #include "main.h"
 #include "stm32f7xx_hal.h"
 #include "bsp_driver_sd.h"
+#include "usbh_core.h"
+#include "usbh_msc.h"
+/* Handle for USB Host */
+#define hUSB_Host hUsbHostFS
 
 /*-----------------------------------------------------------------------------/
 / Function Configurations
@@ -186,7 +190,7 @@
 / Drive/Volume Configurations
 /----------------------------------------------------------------------------*/
 
-#define _VOLUMES    1
+#define _VOLUMES    2
 /* Number of volumes (logical drives) to be used. */
 
 /* USER CODE BEGIN Volumes */

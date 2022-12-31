@@ -1,3 +1,4 @@
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * File Name          : SAI.c
@@ -6,21 +7,19 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2022 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
+/* USER CODE END Header */
+
 /* Includes ------------------------------------------------------------------*/
 #include "sai.h"
-
-#include "gpio.h"
-#include "dma.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -32,6 +31,14 @@ DMA_HandleTypeDef hdma_sai2_a;
 /* SAI2 init function */
 void MX_SAI2_Init(void)
 {
+
+  /* USER CODE BEGIN SAI2_Init 0 */
+
+  /* USER CODE END SAI2_Init 0 */
+
+  /* USER CODE BEGIN SAI2_Init 1 */
+
+  /* USER CODE END SAI2_Init 1 */
 
   hsai_BlockA2.Instance = SAI2_Block_A;
   hsai_BlockA2.Init.Protocol = SAI_FREE_PROTOCOL;
@@ -62,28 +69,48 @@ void MX_SAI2_Init(void)
     Error_Handler();
   }
 
+  /* USER CODE BEGIN SAI2_Init 2 */
+
+  /* USER CODE END SAI2_Init 2 */
+
 }
 static uint32_t SAI2_client =0;
 
-void HAL_SAI_MspInit(SAI_HandleTypeDef* hsai)
+void HAL_SAI_MspInit(SAI_HandleTypeDef* saiHandle)
 {
 
   GPIO_InitTypeDef GPIO_InitStruct;
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 /* SAI2 */
-    if(hsai->Instance==SAI2_Block_A)
+    if(saiHandle->Instance==SAI2_Block_A)
     {
     /* SAI2 clock enable */
+
+  /** Initializes the peripherals clock
+  */
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SAI2;
+    PeriphClkInitStruct.PLLI2S.PLLI2SN = 100;
+    PeriphClkInitStruct.PLLI2S.PLLI2SP = RCC_PLLP_DIV2;
+    PeriphClkInitStruct.PLLI2S.PLLI2SR = 2;
+    PeriphClkInitStruct.PLLI2S.PLLI2SQ = 2;
+    PeriphClkInitStruct.PLLI2SDivQ = 1;
+    PeriphClkInitStruct.Sai2ClockSelection = RCC_SAI2CLKSOURCE_PLLI2S;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
     if (SAI2_client == 0)
     {
        __HAL_RCC_SAI2_CLK_ENABLE();
     }
     SAI2_client ++;
-    
-    /**SAI2_A_Block_A GPIO Configuration    
+
+    /**SAI2_A_Block_A GPIO Configuration
     PI4     ------> SAI2_MCLK_A
     PI5     ------> SAI2_SCK_A
     PI7     ------> SAI2_FS_A
-    PI6     ------> SAI2_SD_A 
+    PI6     ------> SAI2_SD_A
     */
     GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_7|GPIO_PIN_6;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -93,7 +120,7 @@ void HAL_SAI_MspInit(SAI_HandleTypeDef* hsai)
     HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
 
     /* Peripheral DMA init*/
-    
+
     hdma_sai2_a.Instance = DMA2_Stream4;
     hdma_sai2_a.Init.Channel = DMA_CHANNEL_3;
     hdma_sai2_a.Init.Direction = DMA_MEMORY_TO_PERIPH;
@@ -111,34 +138,34 @@ void HAL_SAI_MspInit(SAI_HandleTypeDef* hsai)
 
     /* Several peripheral DMA handle pointers point to the same DMA handle.
      Be aware that there is only one stream to perform all the requested DMAs. */
-    __HAL_LINKDMA(hsai,hdmarx,hdma_sai2_a);
-    __HAL_LINKDMA(hsai,hdmatx,hdma_sai2_a);
+    __HAL_LINKDMA(saiHandle,hdmarx,hdma_sai2_a);
+    __HAL_LINKDMA(saiHandle,hdmatx,hdma_sai2_a);
     }
 }
 
-void HAL_SAI_MspDeInit(SAI_HandleTypeDef* hsai)
+void HAL_SAI_MspDeInit(SAI_HandleTypeDef* saiHandle)
 {
 
 /* SAI2 */
-    if(hsai->Instance==SAI2_Block_A)
+    if(saiHandle->Instance==SAI2_Block_A)
     {
     SAI2_client --;
     if (SAI2_client == 0)
       {
-      /* Peripheral clock disable */ 
+      /* Peripheral clock disable */
        __HAL_RCC_SAI2_CLK_DISABLE();
       }
-    
-    /**SAI2_A_Block_A GPIO Configuration    
+
+    /**SAI2_A_Block_A GPIO Configuration
     PI4     ------> SAI2_MCLK_A
     PI5     ------> SAI2_SCK_A
     PI7     ------> SAI2_FS_A
-    PI6     ------> SAI2_SD_A 
+    PI6     ------> SAI2_SD_A
     */
     HAL_GPIO_DeInit(GPIOI, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_7|GPIO_PIN_6);
 
-    HAL_DMA_DeInit(hsai->hdmarx);
-    HAL_DMA_DeInit(hsai->hdmatx);
+    HAL_DMA_DeInit(saiHandle->hdmarx);
+    HAL_DMA_DeInit(saiHandle->hdmatx);
     }
 }
 
@@ -149,5 +176,3 @@ void HAL_SAI_MspDeInit(SAI_HandleTypeDef* hsai)
 /**
   * @}
   */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -41,14 +41,10 @@ Src/stm32746g_discovery_audio.o: ../Src/stm32746g_discovery_audio.c \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim_ex.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_hcd.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h \
- D:/Temp/CDJ-100S-STM32F7-Display/Middlewares/Third_Party/Helix/pub/mp3dec.h \
- ../Inc/fatfs.h ../Middlewares/Third_Party/FatFs/src/ff.h \
+ ../Middlewares/Third_Party/Helix/pub/mp3dec.h ../Inc/fatfs.h \
+ ../Middlewares/Third_Party/FatFs/src/ff.h \
  ../Middlewares/Third_Party/FatFs/src/integer.h ../Inc/ffconf.h \
  ../Inc/bsp_driver_sd.h ../Inc/fatfs_platform.h \
- ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
- ../Middlewares/Third_Party/FatFs/src/diskio.h \
- ../Middlewares/Third_Party/FatFs/src/ff.h ../Inc/sd_diskio.h \
- ../Inc/usbh_diskio.h \
  ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_core.h \
  ../Inc/usbh_conf.h \
  ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_def.h \
@@ -59,9 +55,12 @@ Src/stm32746g_discovery_audio.o: ../Src/stm32746g_discovery_audio.c \
  ../Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc/usbh_msc.h \
  ../Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc/usbh_msc_bot.h \
  ../Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc/usbh_msc_scsi.h \
- ../Inc/i2c.h ../Inc/sai.h ../Inc/rekordbox.h ../Inc/fatfs.h \
- ../Inc/display.h ../Inc/main.h ../Inc/waveplayer.h ../Inc/mp3player.h \
- ../Inc/tim.h
+ ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
+ ../Middlewares/Third_Party/FatFs/src/diskio.h \
+ ../Middlewares/Third_Party/FatFs/src/ff.h ../Inc/sd_diskio.h \
+ ../Inc/usbh_diskio.h ../Inc/i2c.h ../Inc/sai.h ../Inc/rekordbox.h \
+ ../Inc/fatfs.h ../Inc/display.h ../Inc/main.h ../Inc/waveplayer.h \
+ ../Inc/mp3player.h ../Inc/tim.h
 ../Inc/stm32746g_discovery_audio.h:
 ../Inc/wm8994.h:
 ../Inc/audio.h:
@@ -107,18 +106,13 @@ Src/stm32746g_discovery_audio.o: ../Src/stm32746g_discovery_audio.c \
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim_ex.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_hcd.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h:
-D:/Temp/CDJ-100S-STM32F7-Display/Middlewares/Third_Party/Helix/pub/mp3dec.h:
+../Middlewares/Third_Party/Helix/pub/mp3dec.h:
 ../Inc/fatfs.h:
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 ../Middlewares/Third_Party/FatFs/src/integer.h:
 ../Inc/ffconf.h:
 ../Inc/bsp_driver_sd.h:
 ../Inc/fatfs_platform.h:
-../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h:
-../Middlewares/Third_Party/FatFs/src/diskio.h:
-../Middlewares/Third_Party/FatFs/src/ff.h:
-../Inc/sd_diskio.h:
-../Inc/usbh_diskio.h:
 ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_core.h:
 ../Inc/usbh_conf.h:
 ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_def.h:
@@ -129,6 +123,11 @@ D:/Temp/CDJ-100S-STM32F7-Display/Middlewares/Third_Party/Helix/pub/mp3dec.h:
 ../Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc/usbh_msc.h:
 ../Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc/usbh_msc_bot.h:
 ../Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc/usbh_msc_scsi.h:
+../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h:
+../Middlewares/Third_Party/FatFs/src/diskio.h:
+../Middlewares/Third_Party/FatFs/src/ff.h:
+../Inc/sd_diskio.h:
+../Inc/usbh_diskio.h:
 ../Inc/i2c.h:
 ../Inc/sai.h:
 ../Inc/rekordbox.h:

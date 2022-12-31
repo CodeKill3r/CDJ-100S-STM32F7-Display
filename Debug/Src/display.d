@@ -48,7 +48,18 @@ Src/display.o: ../Src/display.c ../Inc/ltdc.h ../Inc/main.h \
  ../Inc/audio.h ../Inc/sai.h ../Inc/fatfs.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
- ../Middlewares/Third_Party/FatFs/src/ff.h ../Inc/sd_diskio.h
+ ../Middlewares/Third_Party/FatFs/src/ff.h ../Inc/sd_diskio.h \
+ ../Inc/usbh_diskio.h \
+ ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_core.h \
+ ../Inc/usbh_conf.h \
+ ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_def.h \
+ ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_ioreq.h \
+ ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_core.h \
+ ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_pipes.h \
+ ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_ctlreq.h \
+ ../Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc/usbh_msc.h \
+ ../Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc/usbh_msc_bot.h \
+ ../Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc/usbh_msc_scsi.h
 ../Inc/ltdc.h:
 ../Inc/main.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
@@ -110,3 +121,14 @@ D:/Temp/CDJ-100S-STM32F7-Display/Middlewares/Third_Party/Helix/pub/mp3dec.h:
 ../Middlewares/Third_Party/FatFs/src/diskio.h:
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 ../Inc/sd_diskio.h:
+../Inc/usbh_diskio.h:
+../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_core.h:
+../Inc/usbh_conf.h:
+../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_def.h:
+../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_ioreq.h:
+../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_core.h:
+../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_pipes.h:
+../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_ctlreq.h:
+../Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc/usbh_msc.h:
+../Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc/usbh_msc_bot.h:
+../Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc/usbh_msc_scsi.h:

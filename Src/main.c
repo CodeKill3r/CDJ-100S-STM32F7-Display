@@ -292,6 +292,8 @@ int main(void)
 	  f_closedir(&dir);
 	  if(Track_number >= Total_tracks) Track_number = 0;
 	  if(Track_number < 0) Track_number = Total_tracks - 1;
+
+	  MX_USB_HOST_Process();
   }
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();

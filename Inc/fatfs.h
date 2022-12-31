@@ -28,6 +28,7 @@
 #include "sd_diskio.h" /* defines SD_Driver as external */
 
 /* USER CODE BEGIN Includes */
+#include "usbh_diskio.h"
 
 /* USER CODE END Includes */
 
@@ -39,6 +40,10 @@ extern FIL SDFile; /* File object for SD */
 void MX_FATFS_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+extern uint8_t retUSBH;    /* Return value for USBH */
+extern char USBHPath[4];   /* USBH logical drive path */
+extern FATFS USBHFatFS;    /* File system object for USBH logical drive */
+extern FIL USBHFile;       /* File object for USBH */
 
 /* USER CODE END Prototypes */
 #ifdef __cplusplus

@@ -27,6 +27,10 @@ FIL SDFile;       /* File object for SD */
 #include "diskio.h"
 #include "ff.h"
 
+uint8_t retUSBH;    /* Return value for USBH */
+char USBHPath[4];   /* USBH logical drive path */
+FATFS USBHFatFS;    /* File system object for USBH logical drive */
+FIL USBHFile;       /* File object for USBH */
 /* USER CODE END Variables */
 
 void MX_FATFS_Init(void)
@@ -36,6 +40,7 @@ void MX_FATFS_Init(void)
 
   /* USER CODE BEGIN Init */
   /* additional user code for init */     
+  retUSBH = FATFS_LinkDriver(&USBH_Driver, USBHPath);
   /* USER CODE END Init */
 }
 

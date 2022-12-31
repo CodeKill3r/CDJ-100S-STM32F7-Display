@@ -77,7 +77,6 @@
 "./Src/stm32746g_discovery_ts.o"
 "./Src/stm32f7xx_hal_msp.o"
 "./Src/stm32f7xx_it.o"
-"./Src/sys.o"
 "./Src/syscalls.o"
 "./Src/system_stm32f7xx.o"
 "./Src/tim.o"

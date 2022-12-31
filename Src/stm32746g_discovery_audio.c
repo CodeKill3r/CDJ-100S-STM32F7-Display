@@ -150,7 +150,7 @@ extern I2C_HandleTypeDef hi2c3;
 extern SAI_HandleTypeDef hsai_BlockA2;
 extern FIL MyFile;     /* File object */
 extern uint16_t g_pMp3OutBuffer[MAX_NCHAN * MAX_NGRAN * MAX_NSAMP];
-uint16_t* g_pMp3OutBufferPtr;
+extern uint16_t* g_pMp3OutBufferPtr;
 extern uint16_t bytesread;
 
 uint8_t stopflag = 0;
@@ -1464,7 +1464,7 @@ UINT Mp3FillReadBuffer(BYTE* pInData, UINT unInDataLeft, FIL* pInFile)
 	if(unRead < unSpaceLeft)
 	{
 	    // zero-pad to avoid finding false sync word after last frame (from old data in readBuf)
-	    memset(BufferCtl.buff + unInDataLeft + unRead, unSpaceLeft - unRead, 0);
+	    memset(BufferCtl.buff + unInDataLeft + unRead, 0, unSpaceLeft - unRead);
 	}
 	return unRead;
 }

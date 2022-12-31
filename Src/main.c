@@ -99,7 +99,7 @@ uint8_t ActiveLayer = 0;
 int Track_number = 0;
 FATFS SDFatFs;  /* File system object for SD card logical drive */
 FIL MyFile;     /* File object */
-char SDPath[4]; /* SD card logical drive path */
+extern char SDPath[4]; /* SD card logical drive path */
 FRESULT res;
 DIR dir;
 static FILINFO fno;
@@ -221,7 +221,7 @@ int main(void)
   HAL_LTDC_SetAlpha_NoReload(&hltdc, 255, ActiveLayer--);
   ChangeLayers();
   ClearLayer(); // clear framebuffer 1
-  HAL_TIM_Base_Start_IT(&htim4); // start display refresh timer
+  HAL_TIM_Base_Start_IT(&htim4); // starft display refresh timer
   if(BSP_SD_IsDetected() != SD_PRESENT) {
 	  menu_mode = 3;
 	  BSP_LCD_DisplayOn();

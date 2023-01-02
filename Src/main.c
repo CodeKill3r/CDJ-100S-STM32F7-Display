@@ -59,6 +59,7 @@
 #include "spi.h"
 #include "tim.h"
 #include "usb_host.h"
+#include "usb_otg_hs.h"
 #include "gpio.h"
 #include "fmc.h"
 
@@ -97,9 +98,9 @@
 /* Private variables ---------------------------------------------------------*/
 uint8_t ActiveLayer = 0;
 int Track_number = 0;
-FATFS SDFatFs;  /* File system object for SD card logical drive */
+//FATFS SDFatFs;  /* File system object for SD card logical drive */
 FIL MyFile;     /* File object */
-extern char SDPath[4]; /* SD card logical drive path */
+//extern char SDPath[4]; /* SD card logical drive path */
 FRESULT res;
 DIR dir;
 static FILINFO fno;
@@ -142,6 +143,9 @@ volatile UINT bOutOfData = 0;
 volatile uint32_t unDmaBufMode = 0;
 uint8_t volume = 60;
 uint8_t acue_sensitivity = 30;
+
+extern ApplicationTypeDef Appli_state;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -214,6 +218,7 @@ int main(void)
   MX_TIM5_Init();
   MX_TIM9_Init();
   MX_USB_HOST_Init();
+  MX_USB_OTG_HS_HCD_Init();
   /* USER CODE BEGIN 2 */
   SDRAM_Init(); // MT48LC4M32B2B5-6A SDRAM initialization
   BSP_LCD_DisplayOff();
@@ -225,15 +230,14 @@ int main(void)
   ChangeLayers();
   ClearLayer(); // clear framebuffer 1
   HAL_TIM_Base_Start_IT(&htim4); // starft display refresh timer
-  if(BSP_SD_IsDetected() != SD_PRESENT) {
-	  menu_mode = 3;
-	  BSP_LCD_DisplayOn();
-	  while(1);
+  while (Appli_state != APPLICATION_READY)
+  {
+	  MX_USB_HOST_Process();
   }
   BSP_TS_Init(480, 272); // touchscreen initialization
   BSP_TS_ITClear();
   BSP_TS_ITConfig();
-  f_mount(&SDFatFs, (TCHAR const*)SDPath, 0); // SD card disk mount
+//  f_mount(&SDFatFs, (TCHAR const*)SDPath, 0); // SD card disk mount
   hMP3Decoder = MP3InitDecoder(); // mp3 decoder initialization
   scan_files(); // get total track number
   HAL_TIM_Base_Start_IT(&htim5); // start jog speed counting timer

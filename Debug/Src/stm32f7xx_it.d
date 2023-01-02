@@ -45,7 +45,6 @@ Src/stm32f7xx_it.o: ../Src/stm32f7xx_it.c ../Inc/main.h \
  ../Inc/audio.h ../Inc/sai.h ../Inc/main.h ../Inc/fatfs.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h \
  ../Middlewares/Third_Party/FatFs/src/integer.h ../Inc/ffconf.h \
- ../Inc/bsp_driver_sd.h ../Inc/fatfs_platform.h \
  ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_core.h \
  ../Inc/usbh_conf.h \
  ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_def.h \
@@ -58,9 +57,8 @@ Src/stm32f7xx_it.o: ../Src/stm32f7xx_it.c ../Inc/main.h \
  ../Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc/usbh_msc_scsi.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
- ../Middlewares/Third_Party/FatFs/src/ff.h ../Inc/sd_diskio.h \
- ../Inc/usbh_diskio.h ../Inc/mp3player.h ../Inc/waveplayer.h \
- ../Inc/rekordbox.h ../Inc/spi.h
+ ../Middlewares/Third_Party/FatFs/src/ff.h ../Inc/usbh_diskio.h \
+ ../Inc/mp3player.h ../Inc/waveplayer.h ../Inc/rekordbox.h ../Inc/spi.h
 ../Inc/main.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
 ../Inc/stm32f7xx_hal_conf.h:
@@ -117,8 +115,6 @@ Src/stm32f7xx_it.o: ../Src/stm32f7xx_it.c ../Inc/main.h \
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 ../Middlewares/Third_Party/FatFs/src/integer.h:
 ../Inc/ffconf.h:
-../Inc/bsp_driver_sd.h:
-../Inc/fatfs_platform.h:
 ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_core.h:
 ../Inc/usbh_conf.h:
 ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_def.h:
@@ -132,7 +128,6 @@ Src/stm32f7xx_it.o: ../Src/stm32f7xx_it.c ../Inc/main.h \
 ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h:
 ../Middlewares/Third_Party/FatFs/src/diskio.h:
 ../Middlewares/Third_Party/FatFs/src/ff.h:
-../Inc/sd_diskio.h:
 ../Inc/usbh_diskio.h:
 ../Inc/mp3player.h:
 ../Inc/waveplayer.h:

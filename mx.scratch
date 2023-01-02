@@ -16,10 +16,19 @@
       <Secure />
       <filestoremove>
         <file>
-          <name>gpio.h</name>
+          <name>Src/bsp_driver_sd.c</name>
         </file>
         <file>
           <name>..\Src\display.c</name>
+        </file>
+        <file>
+          <name>Src/sd_diskio.c</name>
+        </file>
+        <file>
+          <name>Src/fatfs_platform.c</name>
+        </file>
+        <file>
+          <name>gpio.h</name>
         </file>
         <file>
           <name>dma.h</name>

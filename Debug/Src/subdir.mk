@@ -5,12 +5,10 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../Src/bsp_driver_sd.c \
 ../Src/display.c \
 ../Src/dma.c \
 ../Src/dma2d.c \
 ../Src/fatfs.c \
-../Src/fatfs_platform.c \
 ../Src/fmc.c \
 ../Src/ft5336.c \
 ../Src/gpio.c \
@@ -20,7 +18,6 @@ C_SRCS += \
 ../Src/mp3player.c \
 ../Src/rekordbox.c \
 ../Src/sai.c \
-../Src/sd_diskio.c \
 ../Src/sdmmc.c \
 ../Src/spi.c \
 ../Src/stm32746g_discovery_audio.c \
@@ -31,6 +28,7 @@ C_SRCS += \
 ../Src/system_stm32f7xx.c \
 ../Src/tim.c \
 ../Src/usb_host.c \
+../Src/usb_otg_hs.c \
 ../Src/usbh_conf.c \
 ../Src/usbh_diskio.c \
 ../Src/usbh_platform.c \
@@ -38,12 +36,10 @@ C_SRCS += \
 ../Src/wm8994.c 
 
 OBJS += \
-./Src/bsp_driver_sd.o \
 ./Src/display.o \
 ./Src/dma.o \
 ./Src/dma2d.o \
 ./Src/fatfs.o \
-./Src/fatfs_platform.o \
 ./Src/fmc.o \
 ./Src/ft5336.o \
 ./Src/gpio.o \
@@ -53,7 +49,6 @@ OBJS += \
 ./Src/mp3player.o \
 ./Src/rekordbox.o \
 ./Src/sai.o \
-./Src/sd_diskio.o \
 ./Src/sdmmc.o \
 ./Src/spi.o \
 ./Src/stm32746g_discovery_audio.o \
@@ -64,6 +59,7 @@ OBJS += \
 ./Src/system_stm32f7xx.o \
 ./Src/tim.o \
 ./Src/usb_host.o \
+./Src/usb_otg_hs.o \
 ./Src/usbh_conf.o \
 ./Src/usbh_diskio.o \
 ./Src/usbh_platform.o \
@@ -71,12 +67,10 @@ OBJS += \
 ./Src/wm8994.o 
 
 C_DEPS += \
-./Src/bsp_driver_sd.d \
 ./Src/display.d \
 ./Src/dma.d \
 ./Src/dma2d.d \
 ./Src/fatfs.d \
-./Src/fatfs_platform.d \
 ./Src/fmc.d \
 ./Src/ft5336.d \
 ./Src/gpio.d \
@@ -86,7 +80,6 @@ C_DEPS += \
 ./Src/mp3player.d \
 ./Src/rekordbox.d \
 ./Src/sai.d \
-./Src/sd_diskio.d \
 ./Src/sdmmc.d \
 ./Src/spi.d \
 ./Src/stm32746g_discovery_audio.d \
@@ -97,6 +90,7 @@ C_DEPS += \
 ./Src/system_stm32f7xx.d \
 ./Src/tim.d \
 ./Src/usb_host.d \
+./Src/usb_otg_hs.d \
 ./Src/usbh_conf.d \
 ./Src/usbh_diskio.d \
 ./Src/usbh_platform.d \
@@ -111,7 +105,7 @@ Src/%.o Src/%.su: ../Src/%.c Src/subdir.mk
 clean: clean-Src
 
 clean-Src:
-	-$(RM) ./Src/bsp_driver_sd.d ./Src/bsp_driver_sd.o ./Src/bsp_driver_sd.su ./Src/display.d ./Src/display.o ./Src/display.su ./Src/dma.d ./Src/dma.o ./Src/dma.su ./Src/dma2d.d ./Src/dma2d.o ./Src/dma2d.su ./Src/fatfs.d ./Src/fatfs.o ./Src/fatfs.su ./Src/fatfs_platform.d ./Src/fatfs_platform.o ./Src/fatfs_platform.su ./Src/fmc.d ./Src/fmc.o ./Src/fmc.su ./Src/ft5336.d ./Src/ft5336.o ./Src/ft5336.su ./Src/gpio.d ./Src/gpio.o ./Src/gpio.su ./Src/i2c.d ./Src/i2c.o ./Src/i2c.su ./Src/ltdc.d ./Src/ltdc.o ./Src/ltdc.su ./Src/main.d ./Src/main.o ./Src/main.su ./Src/mp3player.d ./Src/mp3player.o ./Src/mp3player.su ./Src/rekordbox.d ./Src/rekordbox.o ./Src/rekordbox.su ./Src/sai.d ./Src/sai.o ./Src/sai.su ./Src/sd_diskio.d ./Src/sd_diskio.o ./Src/sd_diskio.su ./Src/sdmmc.d ./Src/sdmmc.o ./Src/sdmmc.su ./Src/spi.d ./Src/spi.o ./Src/spi.su ./Src/stm32746g_discovery_audio.d ./Src/stm32746g_discovery_audio.o ./Src/stm32746g_discovery_audio.su ./Src/stm32746g_discovery_ts.d ./Src/stm32746g_discovery_ts.o ./Src/stm32746g_discovery_ts.su ./Src/stm32f7xx_hal_msp.d ./Src/stm32f7xx_hal_msp.o ./Src/stm32f7xx_hal_msp.su ./Src/stm32f7xx_it.d ./Src/stm32f7xx_it.o ./Src/stm32f7xx_it.su ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/system_stm32f7xx.d ./Src/system_stm32f7xx.o ./Src/system_stm32f7xx.su ./Src/tim.d ./Src/tim.o ./Src/tim.su ./Src/usb_host.d ./Src/usb_host.o ./Src/usb_host.su ./Src/usbh_conf.d ./Src/usbh_conf.o ./Src/usbh_conf.su ./Src/usbh_diskio.d ./Src/usbh_diskio.o ./Src/usbh_diskio.su ./Src/usbh_platform.d ./Src/usbh_platform.o ./Src/usbh_platform.su ./Src/waveplayer.d ./Src/waveplayer.o ./Src/waveplayer.su ./Src/wm8994.d ./Src/wm8994.o ./Src/wm8994.su
+	-$(RM) ./Src/display.d ./Src/display.o ./Src/display.su ./Src/dma.d ./Src/dma.o ./Src/dma.su ./Src/dma2d.d ./Src/dma2d.o ./Src/dma2d.su ./Src/fatfs.d ./Src/fatfs.o ./Src/fatfs.su ./Src/fmc.d ./Src/fmc.o ./Src/fmc.su ./Src/ft5336.d ./Src/ft5336.o ./Src/ft5336.su ./Src/gpio.d ./Src/gpio.o ./Src/gpio.su ./Src/i2c.d ./Src/i2c.o ./Src/i2c.su ./Src/ltdc.d ./Src/ltdc.o ./Src/ltdc.su ./Src/main.d ./Src/main.o ./Src/main.su ./Src/mp3player.d ./Src/mp3player.o ./Src/mp3player.su ./Src/rekordbox.d ./Src/rekordbox.o ./Src/rekordbox.su ./Src/sai.d ./Src/sai.o ./Src/sai.su ./Src/sdmmc.d ./Src/sdmmc.o ./Src/sdmmc.su ./Src/spi.d ./Src/spi.o ./Src/spi.su ./Src/stm32746g_discovery_audio.d ./Src/stm32746g_discovery_audio.o ./Src/stm32746g_discovery_audio.su ./Src/stm32746g_discovery_ts.d ./Src/stm32746g_discovery_ts.o ./Src/stm32746g_discovery_ts.su ./Src/stm32f7xx_hal_msp.d ./Src/stm32f7xx_hal_msp.o ./Src/stm32f7xx_hal_msp.su ./Src/stm32f7xx_it.d ./Src/stm32f7xx_it.o ./Src/stm32f7xx_it.su ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/system_stm32f7xx.d ./Src/system_stm32f7xx.o ./Src/system_stm32f7xx.su ./Src/tim.d ./Src/tim.o ./Src/tim.su ./Src/usb_host.d ./Src/usb_host.o ./Src/usb_host.su ./Src/usb_otg_hs.d ./Src/usb_otg_hs.o ./Src/usb_otg_hs.su ./Src/usbh_conf.d ./Src/usbh_conf.o ./Src/usbh_conf.su ./Src/usbh_diskio.d ./Src/usbh_diskio.o ./Src/usbh_diskio.su ./Src/usbh_platform.d ./Src/usbh_platform.o ./Src/usbh_platform.su ./Src/waveplayer.d ./Src/waveplayer.o ./Src/waveplayer.su ./Src/wm8994.d ./Src/wm8994.o ./Src/wm8994.su
 
 .PHONY: clean-Src
 

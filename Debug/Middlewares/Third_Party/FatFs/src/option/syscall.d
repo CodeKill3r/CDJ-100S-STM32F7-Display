@@ -42,8 +42,7 @@ Middlewares/Third_Party/FatFs/src/option/syscall.o: \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim_ex.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_hcd.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h \
- ../Middlewares/Third_Party/Helix/pub/mp3dec.h ../Inc/bsp_driver_sd.h \
- ../Inc/fatfs_platform.h \
+ ../Middlewares/Third_Party/Helix/pub/mp3dec.h \
  ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_core.h \
  ../Inc/usbh_conf.h \
  ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_def.h \
@@ -99,8 +98,6 @@ Middlewares/Third_Party/FatFs/src/option/syscall.o: \
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_hcd.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h:
 ../Middlewares/Third_Party/Helix/pub/mp3dec.h:
-../Inc/bsp_driver_sd.h:
-../Inc/fatfs_platform.h:
 ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_core.h:
 ../Inc/usbh_conf.h:
 ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_def.h:

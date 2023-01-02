@@ -41,8 +41,7 @@ Src/fatfs.o: ../Src/fatfs.c ../Inc/fatfs.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim_ex.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_hcd.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h \
- ../Middlewares/Third_Party/Helix/pub/mp3dec.h ../Inc/bsp_driver_sd.h \
- ../Inc/fatfs_platform.h \
+ ../Middlewares/Third_Party/Helix/pub/mp3dec.h \
  ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_core.h \
  ../Inc/usbh_conf.h \
  ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_def.h \
@@ -55,8 +54,8 @@ Src/fatfs.o: ../Src/fatfs.c ../Inc/fatfs.h \
  ../Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc/usbh_msc_scsi.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
- ../Middlewares/Third_Party/FatFs/src/ff.h ../Inc/sd_diskio.h \
- ../Inc/usbh_diskio.h ../Middlewares/Third_Party/FatFs/src/diskio.h
+ ../Middlewares/Third_Party/FatFs/src/ff.h ../Inc/usbh_diskio.h \
+ ../Middlewares/Third_Party/FatFs/src/diskio.h
 ../Inc/fatfs.h:
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 ../Middlewares/Third_Party/FatFs/src/integer.h:
@@ -103,8 +102,6 @@ Src/fatfs.o: ../Src/fatfs.c ../Inc/fatfs.h \
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_hcd.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h:
 ../Middlewares/Third_Party/Helix/pub/mp3dec.h:
-../Inc/bsp_driver_sd.h:
-../Inc/fatfs_platform.h:
 ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_core.h:
 ../Inc/usbh_conf.h:
 ../Middlewares/ST/STM32_USB_Host_Library/Core/Inc/usbh_def.h:
@@ -118,6 +115,5 @@ Src/fatfs.o: ../Src/fatfs.c ../Inc/fatfs.h \
 ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h:
 ../Middlewares/Third_Party/FatFs/src/diskio.h:
 ../Middlewares/Third_Party/FatFs/src/ff.h:
-../Inc/sd_diskio.h:
 ../Inc/usbh_diskio.h:
 ../Middlewares/Third_Party/FatFs/src/diskio.h:

@@ -368,7 +368,7 @@ FRESULT scan_files()
     UINT subfolders = 0;
     TCHAR relative_path[255] = {0};
     while(1) {
-    	res = f_opendir(&folder, L"/PIONEER/USBANLZ");	/* Open the directory */
+    	res = f_opendir(&folder, L"0://PIONEER/USBANLZ");	/* Open the directory */
     	i = 0;
     	do {
     		res = f_readdir(&folder, &fno);	/* Read a directory item */
@@ -380,7 +380,7 @@ FRESULT scan_files()
     	}
     	if (fno.fattrib & AM_DIR) {	/* It is a directory */
     		folders++;
-    		wcscpy(new_path, L"/PIONEER/USBANLZ/");
+    		wcscpy(new_path, L"0://PIONEER/USBANLZ/");
     		wcscat(new_path, fno.fname);
     	  	for(i = 0; i < 255; i++) relative_path[i] = 0;
     		wcscpy(relative_path, fno.fname);

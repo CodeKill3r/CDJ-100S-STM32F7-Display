@@ -7,19 +7,19 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
   1 .text         00019ccc  080001d0  080001d0  000101d0  2**4
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .rodata       000051a4  08019e9c  08019e9c  00029e9c  2**2
+  2 .rodata       000051bc  08019e9c  08019e9c  00029e9c  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  3 .ARM          00000008  0801f040  0801f040  0002f040  2**2
+  3 .ARM          00000008  0801f058  0801f058  0002f058  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  4 .init_array   00000004  0801f048  0801f048  0002f048  2**2
+  4 .init_array   00000004  0801f060  0801f060  0002f060  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  5 .fini_array   00000004  0801f04c  0801f04c  0002f04c  2**2
+  5 .fini_array   00000004  0801f064  0801f064  0002f064  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  6 .data         00000140  20000000  0801f050  00030000  2**2
+  6 .data         00000140  20000000  0801f068  00030000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  7 .bss          00017e4c  20000140  0801f190  00030140  2**3
+  7 .bss          00017e4c  20000140  0801f1a8  00030140  2**3
                   ALLOC
-  8 ._user_heap_stack 00000604  20017f8c  0801f190  00037f8c  2**0
+  8 ._user_heap_stack 00000604  20017f8c  0801f1a8  00037f8c  2**0
                   ALLOC
   9 .ARM.attributes 00000030  00000000  00000000  00030140  2**0
                   CONTENTS, READONLY
@@ -8950,7 +8950,7 @@ uint32_t HAL_RCC_GetSysClockFreq(void)
  8004618:	40023c00 	.word	0x40023c00
  800461c:	40023800 	.word	0x40023800
  8004620:	0801a080 	.word	0x0801a080
- 8004624:	0801efe8 	.word	0x0801efe8
+ 8004624:	0801f000 	.word	0x0801f000
  8004628:	200000a8 	.word	0x200000a8
 
 0800462c <HAL_RCCEx_PeriphCLKConfig>:
@@ -41494,7 +41494,7 @@ void MX_FATFS_Init(void)
 }
  80135fe:	bd08      	pop	{r3, pc}
  8013600:	2000087c 	.word	0x2000087c
- 8013604:	0801eff8 	.word	0x0801eff8
+ 8013604:	0801f010 	.word	0x0801f010
  8013608:	20000880 	.word	0x20000880
 
 0801360c <HAL_FMC_MspInit>:
@@ -43421,7 +43421,7 @@ void MPU_Config(void)
  80141d8:	f005 f9c6 	bl	8019568 <memset>
     UINT folders = 0;
  80141dc:	2400      	movs	r4, #0
-    	res = f_opendir(&folder, L"/PIONEER/USBANLZ");	/* Open the directory */
+    	res = f_opendir(&folder, L"0://PIONEER/USBANLZ");	/* Open the directory */
  80141de:	4969      	ldr	r1, [pc, #420]	; (8014384 <scan_files+0x1bc>)
  80141e0:	a880      	add	r0, sp, #512	; 0x200
  80141e2:	f7f7 fc8f 	bl	800bb04 <f_opendir>
@@ -43453,7 +43453,7 @@ void MPU_Config(void)
  8014218:	d0e1      	beq.n	80141de <scan_files+0x16>
     		folders++;
  801421a:	3401      	adds	r4, #1
-    		wcscpy(new_path, L"/PIONEER/USBANLZ/");
+    		wcscpy(new_path, L"0://PIONEER/USBANLZ/");
  801421c:	4d5c      	ldr	r5, [pc, #368]	; (8014390 <scan_files+0x1c8>)
  801421e:	495d      	ldr	r1, [pc, #372]	; (8014394 <scan_files+0x1cc>)
  8014220:	4628      	mov	r0, r5
@@ -43640,12 +43640,12 @@ void MPU_Config(void)
  8014388:	2000eb92 	.word	0x2000eb92
  801438c:	2000e3d0 	.word	0x2000e3d0
  8014390:	2000e794 	.word	0x2000e794
- 8014394:	0801ee8c 	.word	0x0801ee8c
+ 8014394:	0801ee98 	.word	0x0801ee98
  8014398:	2000e3f8 	.word	0x2000e3f8
  801439c:	2000e994 	.word	0x2000e994
  80143a0:	20001c30 	.word	0x20001c30
  80143a4:	20001c34 	.word	0x20001c34
- 80143a8:	0801eecc 	.word	0x0801eecc
+ 80143a8:	0801eee4 	.word	0x0801eee4
  80143ac:	20014618 	.word	0x20014618
  80143b0:	20007fd0 	.word	0x20007fd0
 
@@ -44221,11 +44221,11 @@ void Error_Handler(void)
  8014840:	200005d8 	.word	0x200005d8
  8014844:	200005dc 	.word	0x200005dc
  8014848:	2000eb92 	.word	0x2000eb92
- 801484c:	0801eed4 	.word	0x0801eed4
+ 801484c:	0801eeec 	.word	0x0801eeec
  8014850:	20014915 	.word	0x20014915
- 8014854:	0801eedc 	.word	0x0801eedc
- 8014858:	0801eee4 	.word	0x0801eee4
- 801485c:	0801eeec 	.word	0x0801eeec
+ 8014854:	0801eef4 	.word	0x0801eef4
+ 8014858:	0801eefc 	.word	0x0801eefc
+ 801485c:	0801ef04 	.word	0x0801ef04
 
 08014860 <assert_failed>:
 {
@@ -44655,9 +44655,9 @@ uint32_t Mp3ReadId3V2Tag(FIL* pInFile, char* pszArtist, uint32_t unArtistSize, c
  8014b08:	2001      	movs	r0, #1
  8014b0a:	e7fa      	b.n	8014b02 <Mp3ReadId3V2Tag+0x1de>
  8014b0c:	200145e8 	.word	0x200145e8
- 8014b10:	0801eef8 	.word	0x0801eef8
- 8014b14:	0801ef00 	.word	0x0801ef00
- 8014b18:	0801eef4 	.word	0x0801eef4
+ 8014b10:	0801ef10 	.word	0x0801ef10
+ 8014b14:	0801ef18 	.word	0x0801ef18
+ 8014b18:	0801ef0c 	.word	0x0801ef0c
  8014b1c:	08019e9c 	.word	0x08019e9c
 
 08014b20 <PlayMp3File>:
@@ -45480,7 +45480,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
  80150e4:	20016618 	.word	0x20016618
  80150e8:	c00ff000 	.word	0xc00ff000
  80150ec:	000f423f 	.word	0x000f423f
- 80150f0:	0801ef08 	.word	0x0801ef08
+ 80150f0:	0801ef20 	.word	0x0801ef20
  80150f4:	200019e0 	.word	0x200019e0
  80150f8:	20000074 	.word	0x20000074
  80150fc:	2000e374 	.word	0x2000e374
@@ -45820,7 +45820,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
  801541c:	2000006c 	.word	0x2000006c
  8015420:	43160000 	.word	0x43160000
  8015424:	447a0000 	.word	0x447a0000
- 8015428:	0801ef40 	.word	0x0801ef40
+ 8015428:	0801ef58 	.word	0x0801ef58
 		if(FindToken(wv3_token) != 0) return 1;
  801542c:	48a5      	ldr	r0, [pc, #660]	; (80156c4 <DecodeRekordboxFiles+0x848>)
  801542e:	f7ff fcdf 	bl	8014df0 <FindToken>
@@ -46182,7 +46182,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
  80156dc:	c00ff000 	.word	0xc00ff000
  80156e0:	20000054 	.word	0x20000054
  80156e4:	cccccccd 	.word	0xcccccccd
- 80156e8:	0801ef78 	.word	0x0801ef78
+ 80156e8:	0801ef90 	.word	0x0801ef90
  80156ec:	20000074 	.word	0x20000074
  80156f0:	20014618 	.word	0x20014618
  80156f4:	2000007c 	.word	0x2000007c
@@ -46519,7 +46519,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
  8015a08:	2000006c 	.word	0x2000006c
  8015a0c:	43160000 	.word	0x43160000
  8015a10:	447a0000 	.word	0x447a0000
- 8015a14:	0801efb0 	.word	0x0801efb0
+ 8015a14:	0801efc8 	.word	0x0801efc8
 		if(FindToken(wv3_token) != 0) return 1;
  8015a18:	4853      	ldr	r0, [pc, #332]	; (8015b68 <DecodeRekordboxFiles+0xcec>)
  8015a1a:	f7ff f9e9 	bl	8014df0 <FindToken>
@@ -55179,7 +55179,7 @@ LoopFillZerobss:
   ldr   sp, =_estack      /* set stack pointer */
  8019488:	20050000 	.word	0x20050000
   ldr  r3, =_sidata
- 801948c:	0801f050 	.word	0x0801f050
+ 801948c:	0801f068 	.word	0x0801f068
   ldr  r0, =_sdata
  8019490:	20000000 	.word	0x20000000
   ldr  r3, =_edata
@@ -55232,10 +55232,10 @@ Infinite_Loop:
  80194e2:	4798      	blx	r3
  80194e4:	3601      	adds	r6, #1
  80194e6:	e7f2      	b.n	80194ce <__libc_init_array+0x1e>
- 80194e8:	0801f048 	.word	0x0801f048
- 80194ec:	0801f048 	.word	0x0801f048
- 80194f0:	0801f048 	.word	0x0801f048
- 80194f4:	0801f04c 	.word	0x0801f04c
+ 80194e8:	0801f060 	.word	0x0801f060
+ 80194ec:	0801f060 	.word	0x0801f060
+ 80194f0:	0801f060 	.word	0x0801f060
+ 80194f4:	0801f064 	.word	0x0801f064
 
 080194f8 <malloc>:
  80194f8:	4b02      	ldr	r3, [pc, #8]	; (8019504 <malloc+0xc>)
@@ -55900,11 +55900,11 @@ Infinite_Loop:
  8019acc:	f000 f87a 	bl	8019bc4 <_printf_i>
  8019ad0:	e7eb      	b.n	8019aaa <_svfiprintf_r+0x1c2>
  8019ad2:	bf00      	nop
- 8019ad4:	0801f00c 	.word	0x0801f00c
- 8019ad8:	0801f016 	.word	0x0801f016
+ 8019ad4:	0801f024 	.word	0x0801f024
+ 8019ad8:	0801f02e 	.word	0x0801f02e
  8019adc:	00000000 	.word	0x00000000
  8019ae0:	08019831 	.word	0x08019831
- 8019ae4:	0801f012 	.word	0x0801f012
+ 8019ae4:	0801f02a 	.word	0x0801f02a
 
 08019ae8 <_printf_common>:
  8019ae8:	e92d 47f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, lr}
@@ -56240,8 +56240,8 @@ Infinite_Loop:
  8019e00:	f104 0619 	add.w	r6, r4, #25
  8019e04:	e7f5      	b.n	8019df2 <_printf_i+0x22e>
  8019e06:	bf00      	nop
- 8019e08:	0801f01d 	.word	0x0801f01d
- 8019e0c:	0801f02e 	.word	0x0801f02e
+ 8019e08:	0801f035 	.word	0x0801f035
+ 8019e0c:	0801f046 	.word	0x0801f046
 
 08019e10 <__retarget_lock_acquire_recursive>:
  8019e10:	4770      	bx	lr

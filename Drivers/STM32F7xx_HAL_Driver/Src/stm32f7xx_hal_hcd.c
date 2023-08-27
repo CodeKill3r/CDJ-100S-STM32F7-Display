@@ -1548,7 +1548,7 @@ static void HCD_Port_IRQHandler(HCD_HandleTypeDef *hhcd)
   {
     if ((hprt0 & USB_OTG_HPRT_PCSTS) == USB_OTG_HPRT_PCSTS)
     {
-      USB_MASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTSTS_DISCINT);
+      //USB_MASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTSTS_DISCINT);
 
 #if (USE_HAL_HCD_REGISTER_CALLBACKS == 1U)
       hhcd->ConnectCallback(hhcd);

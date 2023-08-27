@@ -1,2 +1,4 @@
-../Middlewares/Third_Party/Helix/real/dqchan.c:132:12:DequantBlock	64	static,ignoring_inline_asm
-../Middlewares/Third_Party/Helix/real/dqchan.c:244:5:xmp3fixpt_DequantChannel	80	static
+../Middlewares/Third_Party/Helix/real/assembly.h:272:21:MULSHIFT32	24	static,ignoring_inline_asm
+../Middlewares/Third_Party/Helix/real/assembly.h:304:21:CLZ	24	static
+../Middlewares/Third_Party/Helix/real/dqchan.c:132:12:DequantBlock	80	static
+../Middlewares/Third_Party/Helix/real/dqchan.c:244:5:xmp3fixpt_DequantChannel	96	static

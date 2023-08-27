@@ -29,6 +29,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx.h"
 #include "stm32f7xx_hal.h"
+#include "ff.h"
 
 /* USER CODE BEGIN INCLUDE */
 
@@ -70,7 +71,7 @@ typedef enum {
 /** @brief USB Host initialization function. */
 void MX_USB_HOST_Init(void);
 
-void MX_USB_HOST_Process(void);
+void MX_USB_HOST_Process(FATFS* USBHfs, TCHAR const* USBHPath);
 
 /**
   * @}

@@ -98,8 +98,12 @@
 uint8_t ActiveLayer = 0;
 int Track_number = 0;
 FATFS SDFatFs;  /* File system object for SD card logical drive */
+FATFS USBHFatFs;  /* File system object for USB_Host logical drive */
 FIL MyFile;     /* File object */
 extern char SDPath[4]; /* SD card logical drive path */
+extern char USBHPath[4]; /* USB Host logical drive path */
+extern ApplicationTypeDef Appli_HS_state;
+//extern ApplicationTypeDef Appli_FS_state;
 FRESULT res;
 DIR dir;
 static FILINFO fno;
@@ -147,7 +151,7 @@ uint8_t acue_sensitivity = 30;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MPU_Config(void);
-void MX_USB_HOST_Process(void);
+void MX_USB_HOST_Process(FATFS* USBHfs, TCHAR const* USBHPath);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -155,6 +159,20 @@ FRESULT scan_files();
 FRESULT find_file(uint16_t track_number);
 
 /* USER CODE END PFP */
+
+
+/*************************************
+ *
+ *
+ *  wchar problems with and without compiler flags: -fshort-wchar
+ *
+ *  without constructors create UTF32 wchars /  L"text" == _T("text")   /  also, the 32bit TCHARs are not compatible with the FATFS functions
+ *
+ *  with the flags the constructors are UTF16 but the wcscpy / wcscat still UTF32 (linked from prebuild toolchain) and messes up the memory
+ *
+ *
+ ********************************/
+
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
@@ -216,7 +234,11 @@ int main(void)
   MX_USB_HOST_Init();
   /* USER CODE BEGIN 2 */
   SDRAM_Init(); // MT48LC4M32B2B5-6A SDRAM initialization
+  menu_mode=3;
+
+  HAL_TIM_Base_Start_IT(&htim4); // starft display refresh timer
   BSP_LCD_DisplayOff();
+
   HAL_LTDC_SetAddress(&hltdc, LCD_FB_START_ADDRESS_0, 0); // set layer 0 framebuffer address
   HAL_LTDC_SetAddress(&hltdc, LCD_FB_START_ADDRESS_1, 1); // set layer 1 framebuffer address
   ClearLayer(); // clear framebuffer 0
@@ -224,18 +246,42 @@ int main(void)
   HAL_LTDC_SetAlpha_NoReload(&hltdc, 255, ActiveLayer--);
   ChangeLayers();
   ClearLayer(); // clear framebuffer 1
-  HAL_TIM_Base_Start_IT(&htim4); // starft display refresh timer
-  if(BSP_SD_IsDetected() != SD_PRESENT) {
+  MX_USB_HOST_Process(&USBHFatFs, (TCHAR const*)USBHPath);
+  dbgAddText("host init");
+  while(((BSP_SD_IsDetected() != SD_PRESENT))&&(Appli_HS_state != APPLICATION_READY)){   //&&(Appli_FS_state != APPLICATION_START))   {
 	  menu_mode = 3;
 	  BSP_LCD_DisplayOn();
-	  while(1);
+	  MX_USB_HOST_Process(&USBHFatFs, (TCHAR const*)USBHPath);
+	  //HAL_Delay(2000);
   }
+  dbgAddText("post usb");
+
   BSP_TS_Init(480, 272); // touchscreen initialization
   BSP_TS_ITClear();
   BSP_TS_ITConfig();
-  f_mount(&SDFatFs, (TCHAR const*)SDPath, 0); // SD card disk mount
+  if (BSP_SD_IsDetected() == SD_PRESENT){
+	  dbgAddText("sd present");
+  	  f_mount(&SDFatFs, (TCHAR const*)SDPath, 0); // SD card disk mount
+  }
+  else if ((Appli_HS_state != APPLICATION_READY)) //&& (Appli_FS_state != APPLICATION_START))   //shouldn't be true if it got here, but just to be safe  --- USB already mounts
+  {
+	  menu_mode = 3;
+	  BSP_LCD_DisplayOn();
+	  MX_USB_HOST_Process(&USBHFatFs, (TCHAR const*)USBHPath);
+	  dbgAddText("usb halt");
+	  while(1);
+  }
+  else if (Appli_HS_state == APPLICATION_READY)	//mount USB
+  {
+  	  f_mount(&USBHFatFs, (TCHAR const*)USBHPath, 0); // USB disk mount
+  }
+
   hMP3Decoder = MP3InitDecoder(); // mp3 decoder initialization
+
+  dbgAddText("pre scan");
   scan_files(); // get total track number
+  dbgAddText("post scan");
+
   HAL_TIM_Base_Start_IT(&htim5); // start jog speed counting timer
   HAL_SPI_TransmitReceive_IT(&hspi2, spi_tx, spi_rx, 4);
   BSP_AUDIO_OUT_Init(OUTPUT_DEVICE_HEADPHONE, volume, (uint32_t)(AUDIO_FREQUENCY_22K)*(1 + trak.percent));
@@ -293,10 +339,10 @@ int main(void)
 	  if(Track_number >= Total_tracks) Track_number = 0;
 	  if(Track_number < 0) Track_number = Total_tracks - 1;
 
-	  MX_USB_HOST_Process();
+	  MX_USB_HOST_Process(&USBHFatFs, (TCHAR const*)USBHPath);
   }
     /* USER CODE END WHILE */
-    MX_USB_HOST_Process();
+  MX_USB_HOST_Process(&USBHFatFs, (TCHAR const*)USBHPath);
 
     /* USER CODE BEGIN 3 */
 
@@ -363,35 +409,43 @@ FRESULT scan_files()
     UINT folders = 0;
     UINT subfolders = 0;
     TCHAR relative_path[255] = {0};
+    //TCHAR pio_dir[20] = {0};
+    //wcscpy(pio_dir,L"/PIONEER/USBANLZ/"+'\0'+'\0');
     while(1) {
     	res = f_opendir(&folder, L"/PIONEER/USBANLZ");	/* Open the directory */
+    	if (res != FR_OK) {
+    		break;	/* Break on error or no dir */
+    	}
     	i = 0;
     	do {
-    		res = f_readdir(&folder, &fno);	/* Read a directory item */
-    	}
-    	while(i++ < folders);
+    		res = f_readdir(&folder, &fno);	/* Read a new, unknown directory item */
+    	}while(i++ < folders);
+
     	if (res != FR_OK || fno.fname[0] == 0) {
     		f_closedir(&folder);
     		break;	/* Break on error or end of dir */
     	}
     	if (fno.fattrib & AM_DIR) {	/* It is a directory */
     		folders++;
+    		for(i = 0; i < 255; i++) new_path[i] = 0;		//clr new_path
     		wcscpy(new_path, L"/PIONEER/USBANLZ/");
-    		wcscat(new_path, fno.fname);
-    	  	for(i = 0; i < 255; i++) relative_path[i] = 0;
-    		wcscpy(relative_path, fno.fname);
-    		wcscpy(old_path, new_path);
+
+    		for(i = 0; i < 255; i++) relative_path[i] = 0;	//clr rel_path
+    		wcscpy(relative_path, fno.fname);				//rel_path= [directory]
+
+    		wcscat(new_path, relative_path);					//step in new_path=  /PIONEER/USBANLZ/ + [directory]
+    		wcscpy(old_path, new_path);						//old_path=new_path
     		f_closedir(&folder);
     		subfolders = 0;
     		while(1) {
-    			res = f_opendir(&folder, old_path);
-    			for(i = 0; i < 255; i++) new_path[i] = 0;
-    			wcscpy(new_path, old_path);
+    			res = f_opendir(&folder, old_path);			//we have to go deeper
+    			for(i = 0; i < 255; i++) new_path[i] = 0;	//clr new_path
+    			wcscpy(new_path, old_path);					//re-use new_path=  /PIONEER/USBANLZ/ + [directory]
     			i = 0;
     			do {
-    				res = f_readdir(&folder, &fno);	/* Read a directory item */
-    			}
-    			while(i++ < subfolders);
+    				res = f_readdir(&folder, &fno);	/* Read a new directory item */
+    			}while(i++ < subfolders);
+
     			if (res != FR_OK || fno.fname[0] == 0) {
     				f_closedir(&folder);
     				break;  /* Break on error or end of dir */
@@ -399,17 +453,17 @@ FRESULT scan_files()
     			if (fno.fattrib & AM_DIR) {	/* It is a directory */
     				subfolders++;
     				wcscat(new_path, L"/");
-    				wcscat(new_path, fno.fname);
+    				wcscat(new_path, fno.fname);			// new_path=  /PIONEER/USBANLZ/ + [directory] + /[subdir]
     				wcscat(relative_path, L"/");
-    				wcscat(relative_path, fno.fname);
+    				wcscat(relative_path, fno.fname);		// rel_path= [directory] + /[subdir]
     				f_closedir(&folder);
-    				res = f_opendir(&folder, new_path);
+    				res = f_opendir(&folder, new_path);		//one more level deeper
     				if(res == FR_OK) {
-    					res = f_readdir(&folder, &fno);
+    					res = f_readdir(&folder, &fno);		//there should be files!
     					if (!(fno.fattrib & AM_DIR)) {
-    						for(i=0; i<255; i++) TrackPaths[Total_tracks][i] = ff_convert(new_path[i], 0);
+    						for(i=0; i<255; i++) TrackPaths[Total_tracks][i] = ff_convert(new_path[i], 0);		//populate database
     						wcscat(new_path, L"/");
-    						wcscat(new_path, fno.fname);
+    						wcscat(new_path, fno.fname);			//one of the files --- does not matter -- all starts with the main header then the mediafile
     						GetFileName(new_path);
     						for(i = 0; i < 255; i++) TrackTable[Total_tracks][i] = rekordbox.file[i];
     						Total_tracks++;

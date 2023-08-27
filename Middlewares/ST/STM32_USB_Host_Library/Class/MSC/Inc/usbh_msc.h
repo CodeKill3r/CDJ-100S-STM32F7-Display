@@ -86,7 +86,7 @@ typedef enum
 MSC_ReqStateTypeDef;
 
 #ifndef MAX_SUPPORTED_LUN
-    #define MAX_SUPPORTED_LUN       2U
+    #define MAX_SUPPORTED_LUN       1U
 #endif
 
 

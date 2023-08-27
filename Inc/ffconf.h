@@ -60,7 +60,7 @@
 #include "usbh_core.h"
 #include "usbh_msc.h"
 /* Handle for USB Host */
-#define hUSB_Host hUsbHostFS
+#define hUSB_Host hUsbHostHS   //phost  only HS prepped --- hUsbHostFS
 
 /*-----------------------------------------------------------------------------/
 / Function Configurations

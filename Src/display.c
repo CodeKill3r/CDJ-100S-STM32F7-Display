@@ -34,7 +34,11 @@ extern int str_increment;
 extern uint16_t Total_tracks;
 
 float stretch = 1;
-int8_t menu_mode = 0;
+int8_t menu_mode = 0;	// 0 -- no-menu / 1 -- file list / 2 -- settings / 3 -- errors (+debug)
+
+char DebugText[10][25];
+uint8_t DebugLines = 0;
+#define MAXDEBUG 9
 
 int beat = 0;
 uint32_t first_beat = 0;
@@ -49,6 +53,15 @@ extern uint8_t inbuf[AUDIO_OUT_BUFFER_SIZE];
 extern uint8_t volume;
 extern float jog_sensitivity;
 extern uint8_t acue_sensitivity;
+
+//debug text handler
+void dbgAddText(const char* text)
+{
+	if (DebugLines < MAXDEBUG){
+		//strcpy(DebugText[DebugLines],text);
+		DebugLines++;
+	}
+}
 
 // converts ARGB8888 to RGB565
 static uint16_t Color_Convertion(uint32_t in_color)
@@ -91,11 +104,14 @@ void DrawMenu()
 {
 	uint32_t backcolor = 0;
 	if(menu_mode == 0) {
+		//no menu -- normal play
 		char string[255] = " { ";
 		DrawString(strcat(string, rekordbox.file), 0, 20, 0x00FFFFFF, 0x000000FF);
 	}
 	else if(menu_mode == 1) {
+		//file selection list
 		if(Total_tracks > 7) {
+			//prepare lines
 			uint16_t scroll_lenght = (140/(float)Total_tracks)*7;
 			uint16_t step_scroll = (140/(float)Total_tracks)*(float)str_increment;
 			if(scroll_lenght < 5) scroll_lenght = 5;
@@ -107,9 +123,11 @@ void DrawMenu()
 			VLine(7, 22+step_scroll, scroll_lenght-2, 0x00FFFFFF);
 			VLine(9, 21, 140, 0x00FFFFFF);
 		}
+		//header
 		DrawString(" [FILES]", 0, 20, 0x00FFFFFF, 0x000000FF);
 		int i = 0;
 		while(21+20*(i+1) < 165) {
+			//draw filenames
 			char string[255] = "{ ";
 			if(i == Track_number - str_increment) {
 				if(i == Mark_number) {
@@ -151,6 +169,7 @@ void DrawMenu()
 		}
 	}
 	else if(menu_mode == 2) {
+		//settings menu
 		DrawString(" [SETTINGS]", 0, 20, 0x00FFFFFF, 0x000000FF);
 		backcolor += 0x00202020;
 		char stri[50] = {0};
@@ -183,7 +202,14 @@ void DrawMenu()
 		if(acu_pos != 0) Rectangle(40, 122, acu_pos, 17, 0x00FFFFFF);
 	}
 	else if(menu_mode == 3) {
-		DrawString("ERROR! INSERT SD CARD AND RESTART!", 0, 20, 0x00FFFFFF, 0x00FF0000);
+		//error screen
+		DrawString("ERROR! INSERT SD CARD or USB storage!", 0, 20, 0x00FFFFFF, 0x00FF0000);
+		//draw string
+		uint8_t i=0;
+		while (i<DebugLines){
+			DrawString(DebugText[i], 10, 21+20*(i+1), 0x00FFFFFF, backcolor);
+			i++;
+		}
 	}
 }
 

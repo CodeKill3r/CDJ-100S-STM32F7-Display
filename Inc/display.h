@@ -45,4 +45,6 @@ void Pixel(uint16_t Xpos, uint16_t Ypos, uint32_t color);
 void DrawDigit(uint8_t digit, uint16_t Xpos, uint16_t Ypos, uint8_t width, uint32_t color);
 void DrawString(char* str, uint16_t Xpos, uint16_t Ypos, uint32_t color, uint32_t fontcolor);
 uint32_t QuantizePosition(int beat_offset);
+
+void dbgAddText(const char* text);
 //uint16_t GetLoopLength();

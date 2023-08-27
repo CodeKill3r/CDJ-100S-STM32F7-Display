@@ -1,5 +1,5 @@
-../Src/waveplayer.c:52:9:ReadWavHeader	16	static
-../Src/waveplayer.c:78:6:TrackTime	16	static
-../Src/waveplayer.c:170:6:GoToPosition	24	static
-../Src/waveplayer.c:60:6:GetTrackTime	24	static
-../Src/waveplayer.c:87:6:PlayWavFile	24	static
+../Src/waveplayer.c:52:9:ReadWavHeader	24	static
+../Src/waveplayer.c:60:6:GetTrackTime	72	static
+../Src/waveplayer.c:78:6:TrackTime	4	static
+../Src/waveplayer.c:87:6:PlayWavFile	16	static
+../Src/waveplayer.c:170:6:GoToPosition	120	static

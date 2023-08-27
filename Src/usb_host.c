@@ -26,6 +26,7 @@
 
 /* USER CODE BEGIN Includes */
 #include "fatfs.h"
+#include "display.h"
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN PV */
@@ -41,7 +42,10 @@
 /* USB Host core handle declaration */
 USBH_HandleTypeDef hUsbHostHS;
 USBH_HandleTypeDef hUsbHostFS;
-ApplicationTypeDef Appli_state = APPLICATION_IDLE;
+ApplicationTypeDef Appli_HS_state = APPLICATION_IDLE;
+ApplicationTypeDef Appli_FS_state = APPLICATION_IDLE;
+FATFS* locUSBHfs;
+TCHAR* locUSBHPath;
 
 /*
  * -- Insert your variables declaration here --
@@ -54,7 +58,7 @@ ApplicationTypeDef Appli_state = APPLICATION_IDLE;
  * user callback declaration
  */
 static void USBH_UserProcess1(USBH_HandleTypeDef *phost, uint8_t id);
-static void USBH_UserProcess2(USBH_HandleTypeDef *phost, uint8_t id);
+//static void USBH_UserProcess2(USBH_HandleTypeDef *phost, uint8_t id);
 
 /*
  * -- Insert your external function declaration here --
@@ -76,21 +80,26 @@ void MX_USB_HOST_Init(void)
   /* Init host Library, add supported class and start the library. */
   if (USBH_Init(&hUsbHostHS, USBH_UserProcess1, HOST_HS) != USBH_OK)
   {
+	  dbgAddText("EUSBH_Init");
     Error_Handler();
   }
   if (USBH_RegisterClass(&hUsbHostHS, USBH_MSC_CLASS) != USBH_OK)
   {
+	  dbgAddText("EUSBH_RegisterClass");
     Error_Handler();
   }
   if (USBH_Start(&hUsbHostHS) != USBH_OK)
   {
+	  dbgAddText("EUSBH_Start");
     Error_Handler();
   }
+  dbgAddText("uInitOK");
   /* USER CODE BEGIN USB_HOST_Init_PreTreatment */
 
   /* USER CODE END USB_HOST_Init_PreTreatment */
 
   /* Init host Library, add supported class and start the library. */
+  /*---
   if (USBH_Init(&hUsbHostFS, USBH_UserProcess2, HOST_FS) != USBH_OK)
   {
     Error_Handler();
@@ -103,6 +112,7 @@ void MX_USB_HOST_Init(void)
   {
     Error_Handler();
   }
+  ---*/
   /* USER CODE BEGIN USB_HOST_Init_PostTreatment */
 
   /* USER CODE END USB_HOST_Init_PostTreatment */
@@ -111,10 +121,27 @@ void MX_USB_HOST_Init(void)
 /*
  * Background task
  */
-void MX_USB_HOST_Process(void)
+void MX_USB_HOST_Process(FATFS* USBHfs, TCHAR const* USBHPath)
 {
   /* USB Host Background task */
-  USBH_Process(&hUsbHostHS);
+  locUSBHfs=USBHfs;
+  locUSBHPath=USBHPath;
+  //handle USB enumeration
+  while //(Appli_HS_state != APPLICATION_READY)
+	  ((hUsbHostHS.gState != HOST_CLASS) && (hUsbHostHS.gState != HOST_DEV_DISCONNECTED)
+		  && (hUsbHostHS.gState != HOST_ABORT_STATE) )
+  {
+	  USBH_Process(&hUsbHostHS);
+  }
+
+  //handle MSC init
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) hUsbHostHS.pActiveClass->pData;
+
+  while((MSC_Handle->state != MSC_IDLE) && (MSC_Handle->state != MSC_UNRECOVERED_ERROR))
+  {
+	  USBH_Process(&hUsbHostHS);
+  }
+
   USBH_Process(&hUsbHostFS);
 }
 /*
@@ -123,21 +150,22 @@ void MX_USB_HOST_Process(void)
 static void USBH_UserProcess1  (USBH_HandleTypeDef *phost, uint8_t id)
 {
   /* USER CODE BEGIN CALL_BACK_2 */
+	 dbgAddText("userProc");
   switch(id)
   {
   case HOST_USER_SELECT_CONFIGURATION:
   break;
 
   case HOST_USER_DISCONNECTION:
-  Appli_state = APPLICATION_DISCONNECT;
+  Appli_HS_state = APPLICATION_DISCONNECT;
   break;
 
   case HOST_USER_CLASS_ACTIVE:
-  Appli_state = APPLICATION_READY;
+  Appli_HS_state = APPLICATION_READY;
   break;
 
   case HOST_USER_CONNECTION:
-  Appli_state = APPLICATION_START;
+  Appli_HS_state = APPLICATION_START;
   break;
 
   default:
@@ -155,15 +183,33 @@ static void USBH_UserProcess2  (USBH_HandleTypeDef *phost, uint8_t id)
   break;
 
   case HOST_USER_DISCONNECTION:
-  Appli_state = APPLICATION_DISCONNECT;
+  Appli_FS_state = APPLICATION_DISCONNECT;
+  if (f_mount(NULL, "", 0) != FR_OK)
+  {
+    //LCD_ErrLog("ERROR : Cannot DeInitialize FatFs! \n");
+    DrawString("ERROR! Cannot DeInitialize USB_FS FatFs!", 0, 20, 0x00FFFFFF, 0x00FF0000);
+  }
+  if (FATFS_UnLinkDriver((TCHAR const*) locUSBHPath) != 0)
+  {
+    //LCD_ErrLog("ERROR : Cannot UnLink USB FatFS Driver! \n");
+    DrawString("ERROR! Cannot UnLink USB_FS FatFs!", 0, 20, 0x00FFFFFF, 0x00FF0000);
+  }
   break;
 
   case HOST_USER_CLASS_ACTIVE:
-  Appli_state = APPLICATION_READY;
+  Appli_FS_state = APPLICATION_READY;
   break;
 
   case HOST_USER_CONNECTION:
-  Appli_state = APPLICATION_START;
+  Appli_FS_state = APPLICATION_START;
+  if (FATFS_LinkDriver(&USBH_Driver, (TCHAR const*) locUSBHPath) == 0)
+  {
+    if (f_mount(&locUSBHfs, "", 0) != FR_OK)
+    {
+      //LCD_ErrLog("ERROR : Cannot Initialize FatFs! \n");
+      DrawString("ERROR! Cannot Initialize USB_FS FatFs!", 0, 20, 0x00FFFFFF, 0x00FF0000);
+    }
+  }
   break;
 
   default:

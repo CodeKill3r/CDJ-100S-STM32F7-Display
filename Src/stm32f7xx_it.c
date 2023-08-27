@@ -366,6 +366,9 @@ void SPI2_IRQHandler(void)
 
 /**
   * @brief This function handles EXTI line[15:10] interrupts.
+  *
+  * TouchScreen handler routines
+  *
   */
 void EXTI15_10_IRQHandler(void)
 {
@@ -636,6 +639,11 @@ void OTG_HS_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+/*
+ *
+ * External MIDI signal handler
+ *
+ */
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi) {
 	switch(spi_rx[1] & 0xF0) {
 	case 0x90: {

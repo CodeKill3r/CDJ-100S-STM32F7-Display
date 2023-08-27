@@ -5,6 +5,11 @@
  *      Author: teren
  */
 
+#ifndef __DISPALY_H
+#define __DISPALY_H
+
+#define MAXTOTALTRACKS 100
+
 typedef struct {
 	uint8_t timemode;
 	uint8_t pitchmode;
@@ -48,3 +53,5 @@ uint32_t QuantizePosition(int beat_offset);
 
 void dbgAddText(const char* text);
 //uint16_t GetLoopLength();
+
+#endif  /* __DISPALY_H */

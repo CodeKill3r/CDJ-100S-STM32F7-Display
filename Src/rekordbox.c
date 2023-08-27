@@ -11,19 +11,20 @@
 #include <string.h>
 #include "main.h"
 
-char wave_token[5] = "PWAV";
-char wv2_token[5] = "PWV2";
-char wv3_token[5] = "PWV3";
-char cob_token[5] = "PCOB";
-char cue_token[5] = "PCPT";
-char path_token[5] = "PPTH";
-char qtz_token[5] = "PQTZ";
+const char wave_token[5] = "PWAV";
+const char wv2_token[5] = "PWV2";
+const char wv3_token[5] = "PWV3";
+const char cob_token[5] = "PCOB";
+const char cue_token[5] = "PCPT";
+const char path_token[5] = "PPTH";
+const char qtz_token[5] = "PQTZ";
 
 char tag[5];
 
 RekordboxTypeDef rekordbox;
 
-extern uint8_t lowp_wavebuffer[400];
+extern uint8_t lowp_wavebuffer[400];	//constant size -- should be no problem here
+//extern uint8_t waveBuffer[MAX_WAVESIZE];
 
 extern AUDIO_OUT_BufferTypeDef  BufferCtl;
 
@@ -31,12 +32,12 @@ extern FIL MyFile;     /* File object */
 extern uint16_t bytesread;
 extern uint8_t acue_sensitivity;
 
-static uint8_t FindToken (char *token);
+static uint8_t FindToken (const char *token);
 static int32_t GetLongNumber ();
 static int32_t GetBigEndianLongNumber ();
 
 // finds section token in the file. 0 - token is found, 1 - end of file
-static uint8_t FindToken (char *token) {
+static uint8_t FindToken (const char *token) {
 	for(int i = 0; i < 5; i++) tag[i] = 0;
 	while(f_tell(&MyFile) < f_size(&MyFile)) {
 		while(f_tell(&MyFile) < f_size(&MyFile)) {
@@ -81,22 +82,23 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 	uint8_t k;
 	uint32_t i;
 	uint8_t res = FR_OK;
-	for(i = 0; i < 1000; i++) {
+	for(i = 0; i < RBX_MAX_TQZ; i++) {
 		rekordbox.bpm[i] = 0;
 		rekordbox.phase[i] = 0;
 		rekordbox.timeindex[i] = 0;
 	}
 	rekordbox.cues = 0;
 	// Clear SDRAM or fill with some pattern/color
-	for(i = 0; i < 1000000; i++) *(__IO uint8_t*)(WAVE_BUFFER+i) = 0;
-	for(i = 0; i < 255; i++) rekordbox.filename[i] = 0;
-	char filename[255] = {0};
-	TCHAR my_path[255] = {0};
+	for(i = 0; i < MAX_WAVESIZE; i++) *(__IO uint8_t*)(WAVE_BUFFER+i) = 0;
+	for(i = 0; i < RBX_MAX_PATH; i++) rekordbox.filename[i] = 0;
+	char filename[RBX_MAX_PATH] = {0};
+	TCHAR my_path[RBX_MAX_PATH] = {0};
 	wcscpy(my_path, path);
 	wcscat(my_path, L"/ANLZ0000.DAT");
 	res = f_open(&MyFile, my_path, FA_READ);
 	if(res == FR_OK)
 	{
+		//read file-path  --- oversized path already handled
 		if(FindToken(path_token) != 0) return 1;
 		while(f_read(&MyFile, BufferCtl.buff, 8, (void *)&bytesread) != FR_OK); // dummy read 8 bytes
 		data_size = GetLongNumber();
@@ -127,7 +129,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 		}
 		rekordbox.filetype[4] = 0;
 
-		for(i = 0; i < 255; i++) rekordbox.file[i] = 0;
+		for(i = 0; i < RBX_MAX_PATH; i++) rekordbox.file[i] = 0;
 		i = data_size;
 		while((i > 0) && (filename[i] != '/')) i--;
 		k = 0;
@@ -142,10 +144,11 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 		}
 		rekordbox.file[i] = 0;
 
+		//read quantized time zones
 		if(FindToken(qtz_token) != 0) return 1;
 		while(f_read(&MyFile, BufferCtl.buff, 16, (void *)&bytesread) != FR_OK); // dummy read 16 bytes
 		data_size = GetLongNumber();
-		rekordbox.timezones = data_size;
+		rekordbox.timezones = ((data_size>RBX_MAX_TQZ)?RBX_MAX_TQZ:data_size);  //memory protect!
 		for(i=0; i<rekordbox.timezones; i++) {
 			for(k=0; k<2; k++) {
 				while(f_read(&MyFile, &tag[k], 1, (void *)&bytesread) != FR_OK);
@@ -172,6 +175,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 		if(FindToken(cob_token) != 0) return 1;
 		while(f_read(&MyFile, BufferCtl.buff, 12, (void *)&bytesread) != FR_OK); // dummy read 12 bytes
 		rekordbox.cues = GetLongNumber() + 1;
+		rekordbox.cues=((rekordbox.cues>RBX_NUM_COB)?RBX_NUM_COB:rekordbox.cues);
 		for(i = 1; i < rekordbox.cues; i++) {
 			if(FindToken(cue_token) != 0) return 1;
 			while(f_read(&MyFile, BufferCtl.buff, 8, (void *)&bytesread) != FR_OK); // dummy read 8 bytes
@@ -187,6 +191,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 		if(FindToken(cob_token) != 0) return 1;
 		while(f_read(&MyFile, BufferCtl.buff, 12, (void *)&bytesread) != FR_OK); // dummy read 12 bytes
 		rekordbox.cues += GetLongNumber();
+		rekordbox.cues=((rekordbox.cues>RBX_NUM_COB)?RBX_NUM_COB:rekordbox.cues);
 		k = i;
 		for(k = i; k < rekordbox.cues; k++) {
 			if(FindToken(cue_token) != 0) return 1;
@@ -202,7 +207,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 		}
 		f_close(&MyFile);
 	}
-	for(i = 0; i < 255; i++) my_path[i] = 0;
+	for(i = 0; i < RBX_MAX_PATH; i++) my_path[i] = 0;
 	wcscpy(my_path, path);
 	wcscat(my_path, L"/ANLZ0000.EXT");
 	res = f_open(&MyFile, my_path, FA_READ);
@@ -210,6 +215,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 		if(FindToken(wv3_token) != 0) return 1;
 		while(f_read(&MyFile, BufferCtl.buff, 12, (void *)&bytesread) != FR_OK);
 		rekordbox.spectrum_size = GetLongNumber();
+		rekordbox.spectrum_size=((rekordbox.spectrum_size>MAX_WAVESIZE)?MAX_WAVESIZE:rekordbox.spectrum_size);
 		while(f_read(&MyFile, BufferCtl.buff, 4, (void *)&bytesread) != FR_OK); // dummy read 4 bytes
 		rekordbox.cue_start_position[0] = 0;
 		for(i = 0; i < rekordbox.spectrum_size; i++) {
@@ -224,7 +230,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 		}
 		f_close(&MyFile);
 	}
-	for(i = 0; i < 255; i++) my_path[i] = 0;
+	for(i = 0; i < RBX_MAX_PATH; i++) my_path[i] = 0;
 	wcscpy(my_path, path);
 	wcscat(my_path, L"/ANLZ0001.DAT");
 	res = f_open(&MyFile, my_path, FA_READ);
@@ -260,7 +266,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 		}
 		rekordbox.filetype[4] = 0;
 
-		for(i = 0; i < 255; i++) rekordbox.file[i] = 0;
+		for(i = 0; i < RBX_MAX_PATH; i++) rekordbox.file[i] = 0;
 		i = data_size;
 		while((i > 0) && (filename[i] != '/')) i--;
 		k = 0;
@@ -278,7 +284,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 		if(FindToken(qtz_token) != 0) return 1;
 		while(f_read(&MyFile, BufferCtl.buff, 16, (void *)&bytesread) != FR_OK); // dummy read 22 bytes
 		data_size = GetLongNumber();
-		rekordbox.timezones = data_size;
+		rekordbox.timezones = ((data_size>RBX_MAX_TQZ)?RBX_MAX_TQZ:data_size);  //memory protect!
 		for(i=0; i<rekordbox.timezones; i++) {
 			for(k=0; k<2; k++) {
 				while(f_read(&MyFile, &tag[k], 1, (void *)&bytesread) != FR_OK);
@@ -304,6 +310,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 		if(FindToken(cob_token) != 0) return 1;
 		while(f_read(&MyFile, BufferCtl.buff, 12, (void *)&bytesread) != FR_OK); // dummy read 12 bytes
 		rekordbox.cues = GetLongNumber() + 1;
+		rekordbox.cues=((rekordbox.cues>RBX_NUM_COB)?RBX_NUM_COB:rekordbox.cues);
 		for(i = 1; i < rekordbox.cues; i++) {
 			if(FindToken(cue_token) != 0) return 1;
 			while(f_read(&MyFile, BufferCtl.buff, 8, (void *)&bytesread) != FR_OK); // dummy read 8 bytes
@@ -319,6 +326,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 		if(FindToken(cob_token) != 0) return 1;
 		while(f_read(&MyFile, BufferCtl.buff, 12, (void *)&bytesread) != FR_OK); // dummy read 12 bytes
 		rekordbox.cues += GetLongNumber();
+		rekordbox.cues=((rekordbox.cues>RBX_NUM_COB)?RBX_NUM_COB:rekordbox.cues);
 		k = i;
 		for(k = i; k < rekordbox.cues; k++) {
 			if(FindToken(cue_token) != 0) return 1;
@@ -334,7 +342,7 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 		}
 		f_close(&MyFile);
 	}
-	for(i = 0; i < 255; i++) my_path[i] = 0;
+	for(i = 0; i < RBX_MAX_PATH; i++) my_path[i] = 0;
 	wcscpy(my_path, path);
 	wcscat(my_path, L"/ANLZ0001.EXT");
 	res = f_open(&MyFile, my_path, FA_READ);
@@ -342,9 +350,10 @@ uint8_t DecodeRekordboxFiles(TCHAR *path) {
 		if(FindToken(wv3_token) != 0) return 1;
 		while(f_read(&MyFile, BufferCtl.buff, 12, (void *)&bytesread) != FR_OK);
 		rekordbox.spectrum_size = GetLongNumber();
+		rekordbox.spectrum_size=((rekordbox.spectrum_size>MAX_WAVESIZE)?MAX_WAVESIZE:rekordbox.spectrum_size);
 		while(f_read(&MyFile, BufferCtl.buff, 4, (void *)&bytesread) != FR_OK); // dummy read 4 bytes
 		rekordbox.cue_start_position[0] = 0;
-		for(i=0; i<rekordbox.spectrum_size; i++) {
+		for(i = 0; i < rekordbox.spectrum_size; i++) {
 			while(f_read(&MyFile, &tag[0], 1, (void *)&bytesread) != FR_OK);
 			*(__IO uint8_t*)(WAVE_BUFFER+i) = tag[0];
 			if(rekordbox.autocue == 1) {
@@ -376,8 +385,8 @@ uint8_t GetFileName(TCHAR *path)
 	uint8_t k;
 	uint32_t i;
 	uint8_t res = FR_OK;
-	for(i = 0; i < 255; i++) rekordbox.filename[i] = 0;
-	char filename[255] = {0};
+	for(i = 0; i < RBX_MAX_PATH; i++) rekordbox.filename[i] = 0;
+	char filename[RBX_MAX_PATH*2] = {0};		//UTF16 -- will be converted down to char
 
 	res = f_open(&MyFile, path, FA_READ);
 	if(res == FR_OK)
@@ -385,6 +394,11 @@ uint8_t GetFileName(TCHAR *path)
 		if(FindToken(path_token) != 0) return 1;
 		while(f_read(&MyFile, BufferCtl.buff, 8, (void *)&bytesread) != FR_OK); // dummy read 8 bytes
 		data_size = GetLongNumber();
+		if (data_size>=RBX_MAX_PATH){
+			//ERROR  -- TOO LONG PATH!!!!
+			f_close(&MyFile);
+			return 1;
+		}
 		while(f_read(&MyFile, filename, data_size, (void *)&bytesread) != FR_OK);
 		i = 0;
 		k = 0;
@@ -412,7 +426,7 @@ uint8_t GetFileName(TCHAR *path)
 		}
 		rekordbox.filetype[4] = 0;
 
-		for(i = 0; i < 255; i++) rekordbox.file[i] = 0;
+		for(i = 0; i < RBX_MAX_PATH; i++) rekordbox.file[i] = 0;
 		i = data_size;
 		while((i > 0) && (filename[i] != '/')) i--;
 		k = 0;

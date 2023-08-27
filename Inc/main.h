@@ -109,9 +109,13 @@ void Error_Handler(void);
 #define LCD_INT_EXTI_IRQn EXTI15_10_IRQn
 
 /* USER CODE BEGIN Private defines */
+//
+// external SDRAM for framebuffer and detailed waveform
+//
 #define LCD_FB_START_ADDRESS_0       ((uint32_t)0xC0000000)
-#define LCD_FB_START_ADDRESS_1		 ((uint32_t)0xC007F800)
-#define WAVE_BUFFER					 ((uint32_t)0xC00FF000)
+#define LCD_FB_START_ADDRESS_1		 ((uint32_t)0xC0080000)  //LCD_FB_START_ADDRESS_0+(480*272*2)    //((uint32_t)0xC007F800)
+#define WAVE_BUFFER					 ((uint32_t)0xC0100000)  //LCD_FB_START_ADDRESS_1+(480*272*2)    //((uint32_t)0xC00FF000)
+
 
 #define FILE_READ_BUFFER_SIZE 4096
 #define MP3_INBUF_SIZE 4096

@@ -1,2 +1,1 @@
-../Middlewares/Third_Party/Helix/real/assembly.h:272:21:MULSHIFT32	24	static,ignoring_inline_asm
-../Middlewares/Third_Party/Helix/real/dct32.c:142:6:xmp3fixpt_FDCT32	128	static
+../Middlewares/Third_Party/Helix/real/dct32.c:142:6:xmp3fixpt_FDCT32	64	static,ignoring_inline_asm

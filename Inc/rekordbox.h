@@ -10,28 +10,34 @@
 
 #include "ff.h"
 
+#define RBX_MAX_PATH	255
+#define RBX_MAX_TQZ		1200
+#define RBX_TICKS		64
+#define RBX_NUM_COB		100
+#define MAX_WAVESIZE 200000
+
 typedef struct
 {
-	TCHAR filename[255]; // full filename with path
-	char file[255]; // filename without path
+	TCHAR filename[RBX_MAX_PATH]; // full filename with path
+	char file[255]; // filename without path  --should be smaller than RBX_MAX_PATH
 	char filetype[5]; // file extension
 	uint32_t timezones; // number of time zone entries
-	uint16_t bpm[1000]; // current bpm
-	uint16_t phase[1000]; // current beat phase
-	uint32_t timeindex[1000]; // time index
+	uint16_t bpm[RBX_MAX_TQZ]; // current bpm
+	uint16_t phase[RBX_MAX_TQZ]; // current beat phase
+	uint32_t timeindex[RBX_MAX_TQZ]; // time index
 	uint8_t beat_grid_offset;
 	uint32_t lowp_spectrum_size;
 	uint32_t spectrum_size;
-	uint16_t remminticks[64]; // remain minutes ticks positions
-	uint16_t elminticks[64]; // elapsed minutes ticks positions
+	uint16_t remminticks[RBX_TICKS]; // remain minutes ticks positions
+	uint16_t elminticks[RBX_TICKS]; // elapsed minutes ticks positions
 	uint8_t minutes; // number of minutes
 	int32_t cues; // number of cuepoints
-	uint32_t cue_number[100];
-	uint32_t cue_active[100];
-	int32_t cue_type[100]; // 1 - hot cue, 0 - memory
-	int32_t cue_start_position[100];
-	int32_t cue_end_position[100];
-	uint8_t cue_singleloop[100];
+	uint32_t cue_number[RBX_NUM_COB];
+	uint32_t cue_active[RBX_NUM_COB];
+	int32_t cue_type[RBX_NUM_COB]; // 1 - hot cue, 0 - memory
+	int32_t cue_start_position[RBX_NUM_COB];
+	int32_t cue_end_position[RBX_NUM_COB];
+	uint8_t cue_singleloop[RBX_NUM_COB];
 	uint8_t autocue;
 	int32_t currentcue;
 	uint8_t state;

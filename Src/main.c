@@ -117,8 +117,8 @@ uint8_t lowp_wavebuffer[400];
 extern RekordboxTypeDef rekordbox;
 extern DisplayTypeDef display;
 uint16_t Total_tracks = 0;
-char TrackTable[100][255];
-char TrackPaths[100][255];
+char TrackTable[MAXTOTALTRACKS][255];
+char TrackPaths[MAXTOTALTRACKS][255];
 int8_t halffr = 0;
 int16_t fr = 0;
 int8_t sec = 0;
@@ -130,6 +130,10 @@ uint8_t tim7_flag = 0;
 extern int8_t menu_mode;
 extern int beat;
 extern int bar;
+
+//volatile uint16_t* lcdLocFramebuffer0; //[400*272];
+//volatile uint16_t* lcdLocFramebuffer1; //[400*272];
+//uint8_t* waveBuffer;  //[MAX_WAVESIZE];
 
 uint8_t spi_tx[4] = {0x08, 0x90, 0xFF, 0x00};
 uint8_t spi_rx[4] = {0};
@@ -163,6 +167,15 @@ FRESULT find_file(uint16_t track_number);
 
 /*************************************
  *
+ *
+ * ***************
+ * *** FIXED  ****
+ * ***************
+ *
+ * setting WCHAR (src alias for TCHAR) to 'unsigned int' WORKS!   (instead of 'unsigned short')
+ * in ' Middleware/Third_Party/Fatfs/src/integer.h '
+ *
+ * ********************
  *
  *  wchar problems with and without compiler flags: -fshort-wchar
  *
@@ -236,11 +249,16 @@ int main(void)
   SDRAM_Init(); // MT48LC4M32B2B5-6A SDRAM initialization
   menu_mode=3;
 
-  HAL_TIM_Base_Start_IT(&htim4); // starft display refresh timer
-  BSP_LCD_DisplayOff();
+  ///waveBuffer=(uint8_t*) WAVE_BUFFER;
+
+
+  HAL_TIM_Base_Start_IT(&htim4); // start display refresh timer
+  BSP_LCD_DisplayOn();
 
   HAL_LTDC_SetAddress(&hltdc, LCD_FB_START_ADDRESS_0, 0); // set layer 0 framebuffer address
   HAL_LTDC_SetAddress(&hltdc, LCD_FB_START_ADDRESS_1, 1); // set layer 1 framebuffer address
+  //HAL_LTDC_SetAddress(&hltdc, (uint32_t)lcdLocFramebuffer0, 0); // set layer 0 framebuffer address
+  //HAL_LTDC_SetAddress(&hltdc, (uint32_t)lcdLocFramebuffer1, 1); // set layer 1 framebuffer address
   ClearLayer(); // clear framebuffer 0
   HAL_LTDC_SetAlpha_NoReload(&hltdc, 0, ActiveLayer++);
   HAL_LTDC_SetAlpha_NoReload(&hltdc, 255, ActiveLayer--);
@@ -421,7 +439,7 @@ FRESULT scan_files()
     		res = f_readdir(&folder, &fno);	/* Read a new, unknown directory item */
     	}while(i++ < folders);
 
-    	if (res != FR_OK || fno.fname[0] == 0) {
+    	if ((res != FR_OK) || (fno.fname[0] == '\0') || (Total_tracks>=MAXTOTALTRACKS)) {
     		f_closedir(&folder);
     		break;	/* Break on error or end of dir */
     	}
@@ -446,7 +464,7 @@ FRESULT scan_files()
     				res = f_readdir(&folder, &fno);	/* Read a new directory item */
     			}while(i++ < subfolders);
 
-    			if (res != FR_OK || fno.fname[0] == 0) {
+    			if ((res != FR_OK) || (fno.fname[0] == '\0') || (Total_tracks>=MAXTOTALTRACKS)) {
     				f_closedir(&folder);
     				break;  /* Break on error or end of dir */
     			}
@@ -454,8 +472,8 @@ FRESULT scan_files()
     				subfolders++;
     				wcscat(new_path, L"/");
     				wcscat(new_path, fno.fname);			// new_path=  /PIONEER/USBANLZ/ + [directory] + /[subdir]
-    				wcscat(relative_path, L"/");
-    				wcscat(relative_path, fno.fname);		// rel_path= [directory] + /[subdir]
+    				//wcscat(relative_path, L"/");
+    				//wcscat(relative_path, fno.fname);		// rel_path= [directory] + /[subdir]
     				f_closedir(&folder);
     				res = f_opendir(&folder, new_path);		//one more level deeper
     				if(res == FR_OK) {
@@ -464,10 +482,12 @@ FRESULT scan_files()
     						for(i=0; i<255; i++) TrackPaths[Total_tracks][i] = ff_convert(new_path[i], 0);		//populate database
     						wcscat(new_path, L"/");
     						wcscat(new_path, fno.fname);			//one of the files --- does not matter -- all starts with the main header then the mediafile
-    						GetFileName(new_path);
-    						for(i = 0; i < 255; i++) TrackTable[Total_tracks][i] = rekordbox.file[i];
-    						Total_tracks++;
-    						f_closedir(&folder);
+    						if (GetFileName(new_path)==0)		//filename OK -- otherwise tracknumber overwritten with usable one (hopefully)
+    						{
+    							for(i = 0; i < 255; i++) TrackTable[Total_tracks][i] = rekordbox.file[i];
+    							Total_tracks++;
+    						}
+							f_closedir(&folder);
     					}
     				}
     			}

@@ -15,6 +15,7 @@
 #include <stdio.h>
 
 extern uint8_t lowp_wavebuffer[400];
+//extern uint8_t waveBuffer[MAX_WAVESIZE];
 extern uint32_t file_pos;
 extern uint32_t file_pos_wide;
 extern RekordboxTypeDef rekordbox;
@@ -26,7 +27,7 @@ extern int8_t rmin;
 extern int16_t fr;
 extern int8_t sec;
 extern int8_t min;
-extern uint8_t TrackTable[100][255];
+extern uint8_t TrackTable[MAXTOTALTRACKS][255];
 extern int str_offset;
 extern char String_number;
 extern char Mark_number;
@@ -36,9 +37,9 @@ extern uint16_t Total_tracks;
 float stretch = 1;
 int8_t menu_mode = 0;	// 0 -- no-menu / 1 -- file list / 2 -- settings / 3 -- errors (+debug)
 
-char DebugText[10][25];
+#define MAXDEBUG 10
+char DebugText[MAXDEBUG][45];
 uint8_t DebugLines = 0;
-#define MAXDEBUG 9
 
 int beat = 0;
 uint32_t first_beat = 0;
@@ -58,7 +59,7 @@ extern uint8_t acue_sensitivity;
 void dbgAddText(const char* text)
 {
 	if (DebugLines < MAXDEBUG){
-		//strcpy(DebugText[DebugLines],text);
+		strcpy(DebugText[DebugLines],text+'\0');
 		DebugLines++;
 	}
 }
@@ -205,9 +206,9 @@ void DrawMenu()
 		//error screen
 		DrawString("ERROR! INSERT SD CARD or USB storage!", 0, 20, 0x00FFFFFF, 0x00FF0000);
 		//draw string
-		uint8_t i=0;
+		uint32_t i=0;
 		while (i<DebugLines){
-			DrawString(DebugText[i], 10, 21+20*(i+1), 0x00FFFFFF, backcolor);
+			//DrawString(DebugText[i], 10, 21+20*(i+1), 0x00FFFFFF, backcolor); ///
 			i++;
 		}
 	}

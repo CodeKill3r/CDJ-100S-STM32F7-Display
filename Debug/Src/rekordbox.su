@@ -1,5 +1,3 @@
-../Src/rekordbox.c:39:16:FindToken	24	static
-../Src/rekordbox.c:53:16:GetLongNumber	24	static
-../Src/rekordbox.c:66:16:GetBigEndianLongNumber	24	static
-../Src/rekordbox.c:79:9:DecodeRekordboxFiles	1328	static
-../Src/rekordbox.c:373:9:GetFileName	296	static
+../Src/rekordbox.c:40:16:FindToken	32	static
+../Src/rekordbox.c:80:9:DecodeRekordboxFiles	1336	static
+../Src/rekordbox.c:382:9:GetFileName	552	static

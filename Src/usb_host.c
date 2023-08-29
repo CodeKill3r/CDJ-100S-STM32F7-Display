@@ -40,7 +40,7 @@
 /* USER CODE END PFP */
 
 /* USB Host core handle declaration */
-USBH_HandleTypeDef hUsbHostHS;
+//USBH_HandleTypeDef hUsbHostHS;
 USBH_HandleTypeDef hUsbHostFS;
 ApplicationTypeDef Appli_HS_state = APPLICATION_IDLE;
 ApplicationTypeDef Appli_FS_state = APPLICATION_IDLE;
@@ -58,7 +58,7 @@ TCHAR* locUSBHPath;
  * user callback declaration
  */
 static void USBH_UserProcess1(USBH_HandleTypeDef *phost, uint8_t id);
-//static void USBH_UserProcess2(USBH_HandleTypeDef *phost, uint8_t id);
+static void USBH_UserProcess2(USBH_HandleTypeDef *phost, uint8_t id);
 
 /*
  * -- Insert your external function declaration here --
@@ -78,6 +78,7 @@ void MX_USB_HOST_Init(void)
   /* USER CODE END USB_HOST_Init_PreTreatment */
 
   /* Init host Library, add supported class and start the library. */
+ /*---- USB HS
   if (USBH_Init(&hUsbHostHS, USBH_UserProcess1, HOST_HS) != USBH_OK)
   {
 	  dbgAddText("EUSBH_Init");
@@ -94,25 +95,34 @@ void MX_USB_HOST_Init(void)
     Error_Handler();
   }
   dbgAddText("uInitOK");
+
+  ---*/
+
+
   /* USER CODE BEGIN USB_HOST_Init_PreTreatment */
 
   /* USER CODE END USB_HOST_Init_PreTreatment */
 
   /* Init host Library, add supported class and start the library. */
-  /*---
-  if (USBH_Init(&hUsbHostFS, USBH_UserProcess2, HOST_FS) != USBH_OK)
+	 //dbgAddText("pre fs init");
+  if (USBH_Init(&hUsbHostFS, USBH_UserProcess2, 0) != USBH_OK)
   {
+	  dbgAddText("fs init");
     Error_Handler();
   }
+  //dbgAddText("pre fs reg");
   if (USBH_RegisterClass(&hUsbHostFS, USBH_MSC_CLASS) != USBH_OK)
   {
+	  dbgAddText("fs reg err");
     Error_Handler();
   }
+  //dbgAddText("pre fs start");
   if (USBH_Start(&hUsbHostFS) != USBH_OK)
   {
+	  dbgAddText("fs start err");
     Error_Handler();
   }
-  ---*/
+
   /* USER CODE BEGIN USB_HOST_Init_PostTreatment */
 
   /* USER CODE END USB_HOST_Init_PostTreatment */
@@ -121,36 +131,59 @@ void MX_USB_HOST_Init(void)
 /*
  * Background task
  */
-void MX_USB_HOST_Process(FATFS* USBHfs, TCHAR const* USBHPath)
+void MX_USB_HOST_Process(FATFS* USBHfs, const TCHAR* USBHPath)
 {
   /* USB Host Background task */
-  locUSBHfs=USBHfs;
-  locUSBHPath=USBHPath;
+  //locUSBHfs=USBHfs;
+  //locUSBHPath=USBHPath;
   //handle USB enumeration
+  //USBH_HandleTypeDef* locUSBDef=&hUsbHostHS;   //--- FOR USB HS
+
+  /* --------
+  USBH_HandleTypeDef* locUSBDef=&hUsbHostFS;
   while //(Appli_HS_state != APPLICATION_READY)
-	  ((hUsbHostHS.gState != HOST_CLASS) && (hUsbHostHS.gState != HOST_DEV_DISCONNECTED)
-		  && (hUsbHostHS.gState != HOST_ABORT_STATE) )
+	  ((locUSBDef->gState != HOST_CLASS) && (locUSBDef->gState != HOST_DEV_DISCONNECTED)
+		  && (locUSBDef->gState != HOST_ABORT_STATE) )
   {
-	  USBH_Process(&hUsbHostHS);
+	  USBH_Process(locUSBDef);
   }
 
   //handle MSC init
-  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) hUsbHostHS.pActiveClass->pData;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) locUSBDef->pActiveClass->pData;
 
   while((MSC_Handle->state != MSC_IDLE) && (MSC_Handle->state != MSC_UNRECOVERED_ERROR))
   {
-	  USBH_Process(&hUsbHostHS);
+	  USBH_Process(locUSBDef);
+  }
+----------------*/
+  while //(Appli_HS_state != APPLICATION_READY)
+	  ((hUsbHostFS.gState != HOST_CLASS) && (hUsbHostFS.gState != HOST_DEV_DISCONNECTED)
+		  && (hUsbHostFS.gState != HOST_ABORT_STATE) )
+  {
+	  USBH_Process(&hUsbHostFS);
   }
 
-  USBH_Process(&hUsbHostFS);
+
+  if (hUsbHostFS.gState == HOST_CLASS){
+	  //handle MSC init
+	  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) hUsbHostFS.pActiveClass->pData;
+	  while((MSC_Handle->state != MSC_IDLE) && (MSC_Handle->state != MSC_UNRECOVERED_ERROR))
+	  {
+		  USBH_Process(&hUsbHostFS);
+	  }
+  }
+
+
+  //USBH_Process(&hUsbHostFS);
 }
 /*
  * user callback definition
  */
+
 static void USBH_UserProcess1  (USBH_HandleTypeDef *phost, uint8_t id)
 {
-  /* USER CODE BEGIN CALL_BACK_2 */
-	 dbgAddText("userProc");
+  // USER CODE BEGIN CALL_BACK_2
+	 //dbgAddText("userProc1");
   switch(id)
   {
   case HOST_USER_SELECT_CONFIGURATION:
@@ -171,19 +204,24 @@ static void USBH_UserProcess1  (USBH_HandleTypeDef *phost, uint8_t id)
   default:
   break;
   }
-  /* USER CODE END CALL_BACK_2 */
+  // USER CODE END CALL_BACK_2
 }
+
 
 static void USBH_UserProcess2  (USBH_HandleTypeDef *phost, uint8_t id)
 {
   /* USER CODE BEGIN CALL_BACK_21 */
+	//dbgAddText("userProc2");
   switch(id)
   {
   case HOST_USER_SELECT_CONFIGURATION:
+	  //dbgAddText("userPrCFG");
   break;
 
   case HOST_USER_DISCONNECTION:
   Appli_FS_state = APPLICATION_DISCONNECT;
+  dbgAddText("userPrDisconn");
+  /*
   if (f_mount(NULL, "", 0) != FR_OK)
   {
     //LCD_ErrLog("ERROR : Cannot DeInitialize FatFs! \n");
@@ -193,15 +231,18 @@ static void USBH_UserProcess2  (USBH_HandleTypeDef *phost, uint8_t id)
   {
     //LCD_ErrLog("ERROR : Cannot UnLink USB FatFS Driver! \n");
     DrawString("ERROR! Cannot UnLink USB_FS FatFs!", 0, 20, 0x00FFFFFF, 0x00FF0000);
-  }
+  }*/
   break;
 
   case HOST_USER_CLASS_ACTIVE:
   Appli_FS_state = APPLICATION_READY;
+  dbgAddText("userPrRDY");
   break;
 
   case HOST_USER_CONNECTION:
   Appli_FS_state = APPLICATION_START;
+  dbgAddText("userPrStart");
+  /*
   if (FATFS_LinkDriver(&USBH_Driver, (TCHAR const*) locUSBHPath) == 0)
   {
     if (f_mount(&locUSBHfs, "", 0) != FR_OK)
@@ -209,7 +250,7 @@ static void USBH_UserProcess2  (USBH_HandleTypeDef *phost, uint8_t id)
       //LCD_ErrLog("ERROR : Cannot Initialize FatFs! \n");
       DrawString("ERROR! Cannot Initialize USB_FS FatFs!", 0, 20, 0x00FFFFFF, 0x00FF0000);
     }
-  }
+  }*/
   break;
 
   default:

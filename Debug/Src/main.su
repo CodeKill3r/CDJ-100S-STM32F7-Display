@@ -1,7 +1,7 @@
-../Src/main.c:500:9:find_file.constprop.isra	1128	static
-../Src/main.c:374:6:SystemClock_Config	88	static
-../Src/main.c:423:9:scan_files	1152	static
-../Src/main.c:199:5:main	16	static,ignoring_inline_asm
-../Src/main.c:500:9:find_file	1128	static
-../Src/main.c:533:6:Error_Handler	0	static
-../Src/main.c:551:6:assert_failed	0	static
+../Src/main.c:517:9:find_file.constprop.isra	1128	static
+../Src/main.c:378:6:SystemClock_Config	224	static
+../Src/main.c:440:9:scan_files	1152	static
+../Src/main.c:199:5:main	32	static,ignoring_inline_asm
+../Src/main.c:517:9:find_file	1128	static
+../Src/main.c:599:6:Error_Handler	0	static
+../Src/main.c:617:6:assert_failed	0	static

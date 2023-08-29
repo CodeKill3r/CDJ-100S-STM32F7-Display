@@ -102,8 +102,8 @@ FATFS USBHFatFs;  /* File system object for USB_Host logical drive */
 FIL MyFile;     /* File object */
 extern char SDPath[4]; /* SD card logical drive path */
 extern char USBHPath[4]; /* USB Host logical drive path */
-extern ApplicationTypeDef Appli_HS_state;
-//extern ApplicationTypeDef Appli_FS_state;
+//extern ApplicationTypeDef Appli_HS_state;
+extern ApplicationTypeDef Appli_FS_state;
 FRESULT res;
 DIR dir;
 static FILINFO fno;
@@ -244,32 +244,36 @@ int main(void)
   MX_SPI2_Init();
   MX_TIM5_Init();
   MX_TIM9_Init();
-  MX_USB_HOST_Init();
   /* USER CODE BEGIN 2 */
   SDRAM_Init(); // MT48LC4M32B2B5-6A SDRAM initialization
   menu_mode=3;
 
-  ///waveBuffer=(uint8_t*) WAVE_BUFFER;
-
-
-  HAL_TIM_Base_Start_IT(&htim4); // start display refresh timer
-  BSP_LCD_DisplayOn();
-
   HAL_LTDC_SetAddress(&hltdc, LCD_FB_START_ADDRESS_0, 0); // set layer 0 framebuffer address
   HAL_LTDC_SetAddress(&hltdc, LCD_FB_START_ADDRESS_1, 1); // set layer 1 framebuffer address
-  //HAL_LTDC_SetAddress(&hltdc, (uint32_t)lcdLocFramebuffer0, 0); // set layer 0 framebuffer address
-  //HAL_LTDC_SetAddress(&hltdc, (uint32_t)lcdLocFramebuffer1, 1); // set layer 1 framebuffer address
+     //HAL_LTDC_SetAddress(&hltdc, (uint32_t)lcdLocFramebuffer0, 0); // set layer 0 framebuffer address
+     //HAL_LTDC_SetAddress(&hltdc, (uint32_t)lcdLocFramebuffer1, 1); // set layer 1 framebuffer address
   ClearLayer(); // clear framebuffer 0
+  BSP_LCD_DisplayOn();
+
+
+  MX_USB_HOST_Init();
+
+  HAL_TIM_Base_Start_IT(&htim4); // start display refresh timer
+
   HAL_LTDC_SetAlpha_NoReload(&hltdc, 0, ActiveLayer++);
   HAL_LTDC_SetAlpha_NoReload(&hltdc, 255, ActiveLayer--);
   ChangeLayers();
   ClearLayer(); // clear framebuffer 1
-  MX_USB_HOST_Process(&USBHFatFs, (TCHAR const*)USBHPath);
+  dbgAddText("pre init");
+
+  MX_USB_HOST_Process(&USBHFatFs, (const TCHAR*)USBHPath);
+ // while(1){}; //HALT
+
   dbgAddText("host init");
-  while(((BSP_SD_IsDetected() != SD_PRESENT))&&(Appli_HS_state != APPLICATION_READY)){   //&&(Appli_FS_state != APPLICATION_START))   {
+  while(((BSP_SD_IsDetected() != SD_PRESENT))&&(Appli_FS_state != APPLICATION_READY)){   //&&(Appli_FS_state != APPLICATION_START))   {
 	  menu_mode = 3;
 	  BSP_LCD_DisplayOn();
-	  MX_USB_HOST_Process(&USBHFatFs, (TCHAR const*)USBHPath);
+	  MX_USB_HOST_Process(&USBHFatFs, (const TCHAR*)USBHPath);
 	  //HAL_Delay(2000);
   }
   dbgAddText("post usb");
@@ -279,19 +283,19 @@ int main(void)
   BSP_TS_ITConfig();
   if (BSP_SD_IsDetected() == SD_PRESENT){
 	  dbgAddText("sd present");
-  	  f_mount(&SDFatFs, (TCHAR const*)SDPath, 0); // SD card disk mount
+  	  f_mount(&SDFatFs, (const TCHAR*)SDPath, 0); // SD card disk mount
   }
-  else if ((Appli_HS_state != APPLICATION_READY)) //&& (Appli_FS_state != APPLICATION_START))   //shouldn't be true if it got here, but just to be safe  --- USB already mounts
+  else if ((Appli_FS_state != APPLICATION_READY)) //&& (Appli_FS_state != APPLICATION_START))   //shouldn't be true if it got here, but just to be safe  --- USB already mounts
   {
 	  menu_mode = 3;
 	  BSP_LCD_DisplayOn();
-	  MX_USB_HOST_Process(&USBHFatFs, (TCHAR const*)USBHPath);
+	  MX_USB_HOST_Process(&USBHFatFs, (const TCHAR*)USBHPath);
 	  dbgAddText("usb halt");
 	  while(1);
   }
-  else if (Appli_HS_state == APPLICATION_READY)	//mount USB
+  else if (Appli_FS_state == APPLICATION_READY)	//mount USB
   {
-  	  f_mount(&USBHFatFs, (TCHAR const*)USBHPath, 0); // USB disk mount
+  	  f_mount(&USBHFatFs, (const TCHAR*)USBHPath, 0); // USB disk mount
   }
 
   hMP3Decoder = MP3InitDecoder(); // mp3 decoder initialization
@@ -357,10 +361,10 @@ int main(void)
 	  if(Track_number >= Total_tracks) Track_number = 0;
 	  if(Track_number < 0) Track_number = Total_tracks - 1;
 
-	  MX_USB_HOST_Process(&USBHFatFs, (TCHAR const*)USBHPath);
+	  MX_USB_HOST_Process(&USBHFatFs, (const TCHAR*)USBHPath);
   }
     /* USER CODE END WHILE */
-  MX_USB_HOST_Process(&USBHFatFs, (TCHAR const*)USBHPath);
+  MX_USB_HOST_Process(&USBHFatFs, (const TCHAR*)USBHPath);
 
     /* USER CODE BEGIN 3 */
 
@@ -375,6 +379,7 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
 
   /** Configure the main internal regulator output voltage
   */
@@ -386,10 +391,11 @@ void SystemClock_Config(void)
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSIState = RCC_HSI_OFF;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 25;
-  RCC_OscInitStruct.PLL.PLLN = 384;
+  RCC_OscInitStruct.PLL.PLLN = 400;//384;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 8;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -404,15 +410,26 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  /* Select PLLSAI output as USB clock source */
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_CLK48;
+  PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48SOURCE_PLLSAIP;
+  PeriphClkInitStruct.PLLSAI.PLLSAIN = 192;
+  PeriphClkInitStruct.PLLSAI.PLLSAIQ = 4;
+  PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV4;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
+   * clocks dividers */
+  RCC_ClkInitStruct.ClockType =
+    (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 |
+     RCC_CLOCKTYPE_PCLK2);
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
-
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_6) != HAL_OK)
   {
     Error_Handler();
@@ -518,9 +535,58 @@ FRESULT find_file(uint16_t track_number)
 
 void MPU_Config(void)
 {
+  MPU_Region_InitTypeDef MPU_InitStruct;
 
   /* Disables the MPU */
   HAL_MPU_Disable();
+
+
+  /* Configure the MPU as Strongly ordered for not defined regions */
+  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+  MPU_InitStruct.BaseAddress = 0x00;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_4GB;
+  MPU_InitStruct.AccessPermission = MPU_REGION_NO_ACCESS;
+  MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+  MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+  MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
+  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+  MPU_InitStruct.SubRegionDisable = 0x87;
+  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+  /* Configure the MPU attributes for SDRAM as WT */
+  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+  MPU_InitStruct.BaseAddress = 0xC0000000;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_8MB;
+  MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+  MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+  MPU_InitStruct.IsCacheable = MPU_ACCESS_CACHEABLE;
+  MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
+  MPU_InitStruct.Number = MPU_REGION_NUMBER1;
+  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+  MPU_InitStruct.SubRegionDisable = 0x00;
+  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+  /* Configure the MPU attributes FMC control registers */
+  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+  MPU_InitStruct.BaseAddress = 0xA0000000;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_8KB;
+  MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+  MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
+  MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+  MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
+  MPU_InitStruct.Number = MPU_REGION_NUMBER2;
+  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+  MPU_InitStruct.SubRegionDisable = 0x0;
+  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+
   /* Enables the MPU */
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 

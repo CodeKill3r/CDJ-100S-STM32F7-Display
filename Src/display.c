@@ -37,8 +37,8 @@ extern uint16_t Total_tracks;
 float stretch = 1;
 int8_t menu_mode = 0;	// 0 -- no-menu / 1 -- file list / 2 -- settings / 3 -- errors (+debug)
 
-#define MAXDEBUG 10
-char DebugText[MAXDEBUG][45];
+#define MAXDEBUG 15
+char DebugText[MAXDEBUG][80];
 uint8_t DebugLines = 0;
 
 int beat = 0;
@@ -62,6 +62,7 @@ void dbgAddText(const char* text)
 		strcpy(DebugText[DebugLines],text+'\0');
 		DebugLines++;
 	}
+	DrawMenu();
 }
 
 // converts ARGB8888 to RGB565
@@ -208,7 +209,7 @@ void DrawMenu()
 		//draw string
 		uint32_t i=0;
 		while (i<DebugLines){
-			//DrawString(DebugText[i], 10, 21+20*(i+1), 0x00FFFFFF, backcolor); ///
+			DrawString(DebugText[i], 10, 21+20*(i+1), 0x00FFFFFF, backcolor); ///
 			i++;
 		}
 	}
